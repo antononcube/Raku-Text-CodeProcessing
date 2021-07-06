@@ -6,8 +6,11 @@ The main goal of this package is to facilitate
 [Literate Programming](https://en.wikipedia.org/wiki/Literate_programming)
 with Raku.
 
-The package has functions and a script for the evalutions of
-code chunks in documents of different types (like Markdown, Org-mode, Pod.)
+The package has functions and a script for the evaluations of
+code chunks in documents of different types (like 
+[Markdown](https://daringfireball.net/projects/markdown/), 
+[Org Mode](https://orgmode.org), 
+[Pod6](https://docs.raku.org/language/pod).)
 
 -----
 
@@ -33,9 +36,9 @@ Here are the (optional) parameters:
 
 ### Script
 
-The [directory "./examples"](./examples) has a script file 
-[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku)
-that can be used in the host OS. 
+The [directory "./examples"](./examples) has a script file, 
+[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku),
+that can be used from the command line. 
 
 -----
 
