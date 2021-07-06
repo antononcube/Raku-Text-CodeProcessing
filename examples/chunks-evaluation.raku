@@ -5,12 +5,17 @@ use lib '.';
 
 use Text::CodeProcessing;
 
-## Org-mode
-my Str $fileName =  $*CWD.Str ~ '/resources/' ~ 'BookIntroduction.org';
+## Markdown
+my $fileName =  $*CWD.Str ~ '/resources/' ~ 'BookIntroduction.md';
 
 FileCodeChunksEvaluation($fileName):noteOutputFileName;
 
-## Markdown
-$fileName =  $*CWD.Str ~ '/resources/' ~ 'BookIntroduction.md';
+## Org-mode
+$fileName =  $*CWD.Str ~ '/resources/' ~ 'BookIntroduction.org';
+
+FileCodeChunksEvaluation($fileName):noteOutputFileName;
+
+## Pod6
+$fileName =  $*CWD.Str ~ '/resources/' ~ 'BookIntroduction.pod6';
 
 FileCodeChunksEvaluation($fileName):noteOutputFileName;
