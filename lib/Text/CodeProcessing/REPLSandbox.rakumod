@@ -28,7 +28,7 @@ my class Result {
 }
 
 #| REPL sandbox class
-class REPLSandbox is export {
+class Text::CodeProcessing::REPLSandbox is export {
     has $.save_ctx;
     has $.compiler;
     has $.repl;
