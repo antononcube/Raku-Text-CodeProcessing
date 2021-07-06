@@ -9,19 +9,34 @@ use Text::CodeProcessing::REPLSandbox;
 constant $mdTicks = '```';
 
 #| Markdown code chunk search regex
-my regex Search {
+my regex MarkdownSearch {
     $mdTicks '{' \h* $<lang>=('perl6' | 'raku') [\h+ ('evaluate' | 'eval') \h* '=' \h* $<evaluate>=(TRUE | T | FALSE | F) | \h*] '}'
     $<code>=[<!before $mdTicks> .]*
     $mdTicks
 }
 
 #| Markdown replace sub
-sub Replace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+sub MarkdownReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
     $mdTicks ~ $<lang> ~ $<code> ~ $mdTicks ~
             (!$<evaluate> || $<evaluate>.Str (elem) <TRUE T>
-                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $rakuOutputPrompt,
-                            $rakuErrorPrompt) ~ $mdTicks
+                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $rakuOutputPrompt, $rakuErrorPrompt) ~ $mdTicks
                     !! '');
+}
+
+constant $orgBeginSrc = '#+BEGIN_SRC';
+constant $orgEndSrc = '#+END_SRC';
+
+#| Org-mode code chunk search regex
+my regex OrgModeSearch {
+    $orgBeginSrc \h* $<lang>=('perl6' | 'raku') $<ccrest>=(\V*) \v
+    $<code>=[<!before $orgEndSrc> .]*
+    $orgEndSrc
+}
+
+#| Org-mode replace sub
+sub OrgModeReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+    $orgBeginSrc ~ ' ' ~ $<lang> ~ $<ccrest> ~ "\n" ~ $<code> ~ $orgEndSrc ~
+                    "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
 }
 
 #| Evaluation of code chunk
@@ -46,26 +61,40 @@ sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is 
     ($p.exception ?? $rakuErrorPrompt ~ $p.exception ~ "\n" !! '') ~ $rakuOutputPrompt ~ ($out // $p.output ~ "\n")
 }
 
+my %fileTypeToSearchSub =
+        markdown => &MarkdownSearch,
+        org-mode => &OrgModeSearch;
+
+my %fileTypeToReplaceSub =
+        markdown => &MarkdownReplace,
+        org-mode => &OrgModeReplace;
+
 #| The main program
 sub FileCodeChunksEvaluation(Str $fileName,
-                              Str :$outputFileName,
-                              Str :$rakuOutputPrompt = '# ',
-                              Str :$rakuErrorPrompt = '#ERROR: ',
-                              Bool :$noteOutputFileName = False) is export {
+                             Str :$outputFileName,
+                             Str :$rakuOutputPrompt = '# ',
+                             Str :$rakuErrorPrompt = '#ERROR: ',
+                             Bool :$noteOutputFileName = False) is export {
 
-    ## Determine the output file name
+    ## Determine the output file name and type
     my Str $fileNameNew;
+    my Str $fileType;
 
     with $outputFileName {
         $fileNameNew = $outputFileName
     } else {
         ## If the input file name has extension that is one of <md MD Rmd>
         ## then insert "_weaved" before the extension.
-        if $fileName.match(/ .* ['.md' | '.MD' | '.Rmd'] $ /) {
-            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = ('md' | 'MD' | 'Rmd') $ /, ->
-            $/ { $<name> ~ '_weaved.' ~ $<ext> });
+        if $fileName.match(/ .* \. [ md | MD | Rmd | org ] $ /) {
+            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org) $ /, -> $/ { $<name> ~ '_weaved.' ~ $<ext> });
         } else {
             $fileNameNew = $fileName ~ '_weaved';
+        }
+
+        if $fileName.match(/ .* \. [ md | MD | Rmd ] $ /) { $fileType = 'markdown' }
+        elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
+        else {
+            die "Unknown file type.";
         }
     }
 
@@ -80,5 +109,5 @@ sub FileCodeChunksEvaluation(Str $fileName,
     spurt
             $fileNameNew,
             slurp($fileName)
-                    .subst: &Search, -> $s { Replace($sandbox, $s, :$rakuOutputPrompt, :$rakuErrorPrompt) }, :g;
+                    .subst: %fileTypeToSearchSub{$fileType}, -> $s { %fileTypeToReplaceSub{$fileType}($sandbox, $s, :$rakuOutputPrompt, :$rakuErrorPrompt) }, :g;
 }
