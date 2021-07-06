@@ -5,6 +5,10 @@
 use v6;
 use Text::CodeProcessing::REPLSandbox;
 
+##===========================================================
+## Markdown functions
+##===========================================================
+
 #| Markdown code chunk ticks
 constant $mdTicks = '```';
 
@@ -23,6 +27,11 @@ sub MarkdownReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErro
                     !! '');
 }
 
+
+##===========================================================
+## Org-mode functions
+##===========================================================
+
 constant $orgBeginSrc = '#+BEGIN_SRC';
 constant $orgEndSrc = '#+END_SRC';
 
@@ -38,6 +47,46 @@ sub OrgModeReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuError
     $orgBeginSrc ~ ' ' ~ $<lang> ~ $<ccrest> ~ "\n" ~ $<code> ~ $orgEndSrc ~
                     "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
 }
+
+
+##===========================================================
+## Pod6 functions
+##===========================================================
+
+constant $podBeginSrc = '=begin code';
+constant $podEndSrc = '=end code';
+
+#| Pod6 code chunk search regex
+my regex Pod6Search {
+    $podBeginSrc \v
+    $<code>=[<!before $podEndSrc> .]*
+    $podEndSrc
+}
+
+#| Pod6 replace sub
+sub Pod6Replace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+    $podBeginSrc ~ "\n" ~ $<code> ~ $podEndSrc ~
+                    "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $rakuOutputPrompt, $rakuErrorPrompt) ~ "=end output";
+}
+
+##===========================================================
+## Dictionaries of file-type => sub
+##===========================================================
+
+my %fileTypeToSearchSub =
+        markdown => &MarkdownSearch,
+        org-mode => &OrgModeSearch,
+        pod6 => &Pod6Search;
+
+my %fileTypeToReplaceSub =
+        markdown => &MarkdownReplace,
+        org-mode => &OrgModeReplace,
+        pod6 => &Pod6Replace;
+
+
+##===========================================================
+## Evaluation
+##===========================================================
 
 #| Evaluation of code chunk
 sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is export {
@@ -61,13 +110,10 @@ sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is 
     ($p.exception ?? $rakuErrorPrompt ~ $p.exception ~ "\n" !! '') ~ $rakuOutputPrompt ~ ($out // $p.output ~ "\n")
 }
 
-my %fileTypeToSearchSub =
-        markdown => &MarkdownSearch,
-        org-mode => &OrgModeSearch;
 
-my %fileTypeToReplaceSub =
-        markdown => &MarkdownReplace,
-        org-mode => &OrgModeReplace;
+##===========================================================
+## FileCodeChunksEvaluation
+##===========================================================
 
 #| The main program
 sub FileCodeChunksEvaluation(Str $fileName,
@@ -85,14 +131,15 @@ sub FileCodeChunksEvaluation(Str $fileName,
     } else {
         ## If the input file name has extension that is one of <md MD Rmd>
         ## then insert "_weaved" before the extension.
-        if $fileName.match(/ .* \. [ md | MD | Rmd | org ] $ /) {
-            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org) $ /, -> $/ { $<name> ~ '_weaved.' ~ $<ext> });
+        if $fileName.match(/ .* \. [ md | MD | Rmd | org | pod6 ] $ /) {
+            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ '_weaved.' ~ $<ext> });
         } else {
             $fileNameNew = $fileName ~ '_weaved';
         }
 
         if $fileName.match(/ .* \. [ md | MD | Rmd ] $ /) { $fileType = 'markdown' }
         elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
+        elsif $fileName.match(/ .* \. pod6 $ /) { $fileType = 'pod6' }
         else {
             die "Unknown file type.";
         }
