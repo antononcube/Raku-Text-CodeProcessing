@@ -1,0 +1,70 @@
+
+=para
+This book discusses the use of the programming language Raku for computational workflows for prediction.
+
+=para
+Workflows that belong to:
+=item1 Machine Learning
+=item1 Scientific computing
+
+=head3 Numeric word forms parsing
+
+=para
+Here we load a few packages:
+
+=begin code
+use Lingua::NumericWordForms;
+use Chemistry::Stoichiometry;
+=end code
+
+=para
+Consider examples of converting numeric word forms using the Raku package
+L<Lingua::NumericWordForms|https://github.com/antononcube/Raku-Lingua-NumericWordForms>:
+
+=begin code
+say from-numeric-word-form('one thousand and twenty three')
+=end code
+
+=para
+Here is another conversion from Bulgarian:
+
+=begin code
+say from-numeric-word-form('две хиляди двеста и тринадесет')
+=end code
+
+=para
+Here is another conversion from Greek:
+
+=begin code
+say from-numeric-word-form('τετρακόσια είκοσι επτά')
+=end code
+
+=para
+Here we convert a chemical element symbols to corresponding Russian names:
+
+=head3 Chemical elements data
+
+=begin code
+chemical-element(["O", "Cl", "S"], "Russian")
+=end code
+
+=head3 Variables
+
+=para
+Consider the variable:
+
+=begin code
+my $answer = 42;
+$answer;
+=end code
+
+=para
+Here is a square of it:
+
+=begin code
+$answer * $answer;
+=end code
+
+=begin code
+($answer ~ " ") x 5
+=end code
