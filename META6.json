@@ -1,0 +1,32 @@
+{
+  "perl": "6.d",
+  "name": "Text::CodeProcessing",
+  "api": "1",
+  "auth": "github:antononcube",
+  "version": "0.1.0",
+  "description": "Text::CodeProcessing is package for code processing in documents of different types (like Markdown, Org-mode, Pod.)",
+  "authors": [
+    "Anton Antonov"
+  ],
+  "license": "Artistic-2.0",
+  "provides": {
+    "Text::CodeProcessing": "lib/Text/CodeProcessing.rakumod",
+    "Text::CodeProcessing::REPLSandbox": "lib/Text/CodeProcessing/REPLSandbox.rakumod"
+  },
+  "depends": [],
+  "build-depends": [],
+  "test-depends": [],
+  "resources": [
+    "BookIntroduction.md",
+    "BookIntroduction.org"
+  ],
+  "tags": [
+    "parser",
+    "evaluation",
+    "code processing",
+    "literate programming",
+    "weaving",
+    "tangling"
+  ],
+  "source-url": "https://github.com/antononcube/Raku-Text-CodeProcessing"
+}
