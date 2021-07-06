@@ -4,7 +4,7 @@
   "api": "1",
   "auth": "github:antononcube",
   "version": "0.1.0",
-  "description": "Text::CodeProcessing is package for code processing in documents of different types (like Markdown, Org-mode, Pod.)",
+  "description": "A package with functions for evaluation of code chunks in documents of different types (like Markdown, Org-mode, Pod.)",
   "authors": [
     "Anton Antonov"
   ],
