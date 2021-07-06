@@ -150,7 +150,7 @@ sub FileCodeChunksEvaluation(Str $fileName,
     }
 
     ## Create a sandbox
-    my $sandbox = REPLSandbox.new();
+    my $sandbox = Text::CodeProcessing::REPLSandbox.new();
 
     ## Process code blocks (weave output)
     spurt
