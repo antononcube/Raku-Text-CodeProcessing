@@ -20,10 +20,10 @@ my regex MarkdownSearch {
 }
 
 #| Markdown replace sub
-sub MarkdownReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
     $mdTicks ~ $<lang> ~ $<code> ~ $mdTicks ~
             (!$<evaluate> || $<evaluate>.Str (elem) <TRUE T>
-                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $rakuOutputPrompt, $rakuErrorPrompt) ~ $mdTicks
+                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ $mdTicks
                     !! '');
 }
 
@@ -43,7 +43,7 @@ my regex OrgModeSearch {
 }
 
 #| Org-mode replace sub
-sub OrgModeReplace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
     $orgBeginSrc ~ ' ' ~ $<lang> ~ $<ccrest> ~ "\n" ~ $<code> ~ $orgEndSrc ~
                     "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
 }
@@ -64,9 +64,9 @@ my regex Pod6Search {
 }
 
 #| Pod6 replace sub
-sub Pod6Replace ($sandbox, $/, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
+sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
     $podBeginSrc ~ "\n" ~ $<code> ~ $podEndSrc ~
-                    "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $rakuOutputPrompt, $rakuErrorPrompt) ~ "=end output";
+                    "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ "=end output";
 }
 
 ##===========================================================
@@ -89,7 +89,7 @@ my %fileTypeToReplaceSub =
 ##===========================================================
 
 #| Evaluation of code chunk
-sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is export {
+sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is export {
 
     my $out;
 
@@ -107,7 +107,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is 
     #    say '$p.exception : ', $p.exception;
 
     ## Result with prompts
-    ($p.exception ?? $rakuErrorPrompt ~ $p.exception ~ "\n" !! '') ~ $rakuOutputPrompt ~ ($out // $p.output ~ "\n")
+    ($p.exception ?? $evalErrorPrompt ~ $p.exception ~ "\n" !! '') ~ $evalOutputPrompt ~ ($out // $p.output ~ "\n")
 }
 
 
@@ -118,8 +118,8 @@ sub CodeChunkEvaluate ($sandbox, $code, $rakuOutputPrompt, $rakuErrorPrompt) is 
 #| The main program
 sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
-                             Str :$rakuOutputPrompt = '# ',
-                             Str :$rakuErrorPrompt = '#ERROR: ',
+                             Str :$evalOutputPrompt = '# ',
+                             Str :$evalErrorPrompt = '#ERROR: ',
                              Bool :$noteOutputFileName = False) is export {
 
     ## Determine the output file name and type
@@ -156,5 +156,5 @@ sub FileCodeChunksEvaluation(Str $fileName,
     spurt
             $fileNameNew,
             slurp($fileName)
-                    .subst: %fileTypeToSearchSub{$fileType}, -> $s { %fileTypeToReplaceSub{$fileType}($sandbox, $s, :$rakuOutputPrompt, :$rakuErrorPrompt) }, :g;
+                    .subst: %fileTypeToSearchSub{$fileType}, -> $s { %fileTypeToReplaceSub{$fileType}($sandbox, $s, :$evalOutputPrompt, :$evalErrorPrompt) }, :g;
 }
