@@ -50,9 +50,30 @@ Just using
 [`EVAL`](https://docs.raku.org/routine/EVAL), 
 (as in [SO1]) did not provide state persistence between code chunks evaluations.
 For example, creating and assigning variables or loading packages in the first code chunk
-does not make those variables and packages "available" in the subsequent code chunks.
+did not make those variables and packages "available" in the subsequent code chunks.
 
 That problem is resolved by setting up a separate Raku REPL (sandbox) object. 
+
+-----
+
+## TODO
+
+- [ ] Provide a functions that works on string.
+  (By refactor the main function `FileCodeChunksEvaluation`.)
+    
+- [ ] Add unit tests for:
+
+  - [ ] Code chunks evaluation
+      
+  - [ ] Persistence of REPL state(s)
+  
+  - [ ] REPL availability
+    
+  - [ ] File code chunks evaluation 
+    
+- [ ] Implement evaluation of Raku code chunks in Mathematica notebooks.
+
+- [ ] Make the functionalities to work with languages other than Raku.
 
 -----
 
