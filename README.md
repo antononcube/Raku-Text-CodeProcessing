@@ -61,8 +61,10 @@ That problem is resolved by setting up a separate Raku REPL (sandbox) object.
 
 ## TODO
 
-- [ ] Provide a functions that works on string.
-  (By refactor the main function `FileCodeChunksEvaluation`.)
+The following TODO items are ordered by priority, the most important are on top. 
+ 
+- [ ] Provide a function that works on strings.
+  (By refactoring the main function `FileCodeChunksEvaluation`.)
     
 - [ ] Add unit tests for:
 
@@ -77,6 +79,7 @@ That problem is resolved by setting up a separate Raku REPL (sandbox) object.
 - [ ] Implement evaluation of Raku code chunks in Mathematica notebooks.
 
 - [ ] Make the functionalities to work with languages other than Raku.
+  - This is both difficult and low priority.
 
 -----
 
