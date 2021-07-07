@@ -1,6 +1,7 @@
 # Raku Text::CodeProcessing
 
 [![Build Status](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing.svg?branch=main)](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing)
+[![License: Artistic-2.0](https://img.shields.io/badge/License-Artistic%202.0-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
 
 ## In brief
 
@@ -14,7 +15,18 @@ code chunks in documents of different types (like
 [Org Mode](https://orgmode.org), 
 [Pod6](https://docs.raku.org/language/pod).)
 
------
+------
+
+## Installation 
+
+
+To install the package from the GitHub repository use the shell command:
+
+```
+zef install https://github.com/antononcube/Raku-Text-CodeProcessing.git
+```
+
+------
 
 ## Usage
 
@@ -42,7 +54,7 @@ The [directory "./examples"](./examples) has a script file,
 [`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku),
 that can be used from the command line. 
 
------
+------
 
 ## Implementation notes
 
@@ -100,4 +112,4 @@ The following TODO items are ordered by priority, the most important are on top.
 [SO1] Suman Khanal et al.,
 ["Capture and execute multiline code and incorporate result in raku"](https://stackoverflow.com/q/57127263),
 (2017),
-[Stack Overlow](https://stackoverflow.com).
+[Stack Overflow](https://stackoverflow.com).
