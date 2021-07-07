@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 4;
+plan 5;
 
 #============================================================
 # 1 markdown - Simple
@@ -108,6 +108,41 @@ is
         StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
         $resCode,
         'my $answer = 42; $answer ** 2';
+
+
+#============================================================
+# 5 markdown - State incomplete code
+#============================================================
+$code = q:to/INIT/;
+```{raku}
+my $answer = 42 *
+```
+```{raku}
+$answer ** 2
+```
+INIT
+
+$resCode = q:to/INIT/;
+```raku
+my $answer = 42 *
+```
+```
+#ERR:Missing required term after infix
+#OUT:Nil
+```
+```raku
+$answer ** 2
+```
+```
+#ERR:Variable '$answer' is not declared
+#OUT:Nil
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'my $answer = 42 *; $answer ** 2';
 
 
 done-testing;
