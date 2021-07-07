@@ -63,14 +63,14 @@ That problem is resolved by setting up a separate Raku REPL (sandbox) object.
 
 The following TODO items are ordered by priority, the most important are on top. 
  
-- [ ] Provide a function that works on strings.
+- [X] Provide a function that works on strings.
   (By refactoring the main function `FileCodeChunksEvaluation`.)
     
 - [ ] Add unit tests for:
 
-  - [ ] Code chunks evaluation
+  - [X] Code chunks evaluation
       
-  - [ ] Persistence of REPL state(s)
+  - [X] Persistence of REPL state(s)
   
   - [ ] REPL availability
     
