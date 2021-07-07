@@ -45,7 +45,7 @@ my regex OrgModeSearch {
 #| Org-mode replace sub
 sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
     $orgBeginSrc ~ ' ' ~ $<lang> ~ $<ccrest> ~ "\n" ~ $<code> ~ $orgEndSrc ~
-                    "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
+            "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
 }
 
 
@@ -66,7 +66,7 @@ my regex Pod6Search {
 #| Pod6 replace sub
 sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
     $podBeginSrc ~ "\n" ~ $<code> ~ $podEndSrc ~
-                    "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ "=end output";
+            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ "=end output";
 }
 
 ##===========================================================
@@ -112,10 +112,32 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is 
 
 
 ##===========================================================
+## StringCodeChunksEvaluation
+##===========================================================
+
+#| The main function
+sub StringCodeChunksEvaluation(Str:D $input,
+                               Str:D $docType,
+                               Str:D :$evalOutputPrompt = '# ',
+                               Str:D :$evalErrorPrompt = '#ERROR: ') is export {
+
+    die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys}"
+    unless $docType (elem) %fileTypeToReplaceSub.keys;
+
+    ## Create a sandbox
+    my $sandbox = Text::CodeProcessing::REPLSandbox.new();
+
+    ## Process code chunks (weave output)
+    $input.subst: %fileTypeToSearchSub{$docType}, -> $s { %fileTypeToReplaceSub{$docType}($sandbox, $s,
+                                                                                          :$evalOutputPrompt,
+                                                                                          :$evalErrorPrompt) }, :g;
+}
+
+
+##===========================================================
 ## FileCodeChunksEvaluation
 ##===========================================================
 
-#| The main program
 sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
                              Str :$evalOutputPrompt = '# ',
@@ -129,32 +151,26 @@ sub FileCodeChunksEvaluation(Str $fileName,
     with $outputFileName {
         $fileNameNew = $outputFileName
     } else {
-        ## If the input file name has extension that is one of <md MD Rmd>
+        ## If the input file name has extension that is one of <md MD Rmd org pod6>
         ## then insert "_weaved" before the extension.
-        if $fileName.match(/ .* \. [ md | MD | Rmd | org | pod6 ] $ /) {
+        if $fileName.match(/ .* \. [md | MD | Rmd | org | pod6] $ /) {
             $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ '_weaved.' ~ $<ext> });
         } else {
             $fileNameNew = $fileName ~ '_weaved';
         }
+    }
 
-        if $fileName.match(/ .* \. [ md | MD | Rmd ] $ /) { $fileType = 'markdown' }
-        elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
-        elsif $fileName.match(/ .* \. pod6 $ /) { $fileType = 'pod6' }
-        else {
-            die "Unknown file type.";
-        }
+    if $fileName.match(/ .* \. [md | MD | Rmd] $ /) { $fileType = 'markdown' }
+    elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
+    elsif $fileName.match(/ .* \. pod6 $ /) { $fileType = 'pod6' }
+    else {
+        die "Unknown file type.";
     }
 
     if $noteOutputFileName {
         note "Output file is $fileNameNew" unless $outputFileName;
     }
 
-    ## Create a sandbox
-    my $sandbox = Text::CodeProcessing::REPLSandbox.new();
-
-    ## Process code blocks (weave output)
-    spurt
-            $fileNameNew,
-            slurp($fileName)
-                    .subst: %fileTypeToSearchSub{$fileType}, -> $s { %fileTypeToReplaceSub{$fileType}($sandbox, $s, :$evalOutputPrompt, :$evalErrorPrompt) }, :g;
+    ## Process code chunks (weave output) and spurt in a file
+    spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt) )
 }
