@@ -1,5 +1,7 @@
 # Raku Text::CodeProcessing
 
+[![Build Status](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing.svg?branch=main)](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing)
+
 ## In brief
 
 The main goal of this package is to facilitate 
