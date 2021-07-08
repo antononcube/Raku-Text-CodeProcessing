@@ -2,6 +2,6 @@
 
 use Text::CodeProcessing;
 
-sub MAIN(Str $fileName, Str :$o, Str :$rakuOutputPrompt = '# ', Str :$rakuErrorPrompt = '#ERROR: ') {
-    FileCodeChunksEvaluation( $fileName, outputFileName => $o, :$rakuOutputPrompt, :$rakuErrorPrompt, :noteOutputFileName)
+sub MAIN(Str $fileName, Str :$o, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
+    FileCodeChunksEvaluation( $fileName, outputFileName => $o, :$evalOutputPrompt, :$evalErrorPrompt, :noteOutputFileName)
 }

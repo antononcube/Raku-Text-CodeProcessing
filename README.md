@@ -42,9 +42,9 @@ Here are the (optional) parameters:
 
 - `Str :$outputFileName` : output file name
   
-- `Str :$rakuOutputPrompt = '# '` : code chunk output prompt
+- `Str :$evalOutputPrompt = '# '` : code chunk output prompt
 
-- `Str :$rakuErrorPrompt = '#ERROR: '` : code chunk error prompt
+- `Str :$evalErrorPrompt = '#ERROR: '` : code chunk error prompt
 
 - `Bool :$noteOutputFileName = False` : whether to print out the name of the new file
 
