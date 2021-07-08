@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 5;
+plan 6;
 
 #============================================================
 # 1 markdown - Simple
@@ -78,7 +78,31 @@ is
 
 
 #============================================================
-# 4 markdown - State
+# 4 markdown - no {}
+#============================================================
+$code = q:to/INIT/;
+```raku
+my $answer = 42;
+```
+INIT
+
+$resCode = q:to/INIT/;
+```raku
+my $answer = 42;
+```
+```
+#OUT:42
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'eval=FALSE: my $answer = 42;';
+
+
+#============================================================
+# 5 markdown - State
 #============================================================
 $code = q:to/INIT/;
 ```{raku}
@@ -111,7 +135,7 @@ is
 
 
 #============================================================
-# 5 markdown - State incomplete code
+# 6 markdown - State incomplete code
 #============================================================
 $code = q:to/INIT/;
 ```{raku}

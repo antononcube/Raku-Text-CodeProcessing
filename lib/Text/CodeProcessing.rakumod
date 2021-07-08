@@ -14,7 +14,7 @@ constant $mdTicks = '```';
 
 #| Markdown code chunk search regex
 my regex MarkdownSearch {
-    $mdTicks '{' \h* $<lang>=('perl6' | 'raku') [\h+ ('evaluate' | 'eval') \h* '=' \h* $<evaluate>=(TRUE | T | FALSE | F) | \h*] '}'
+    $mdTicks [ '{' \h* $<lang>=('perl6' | 'raku') [\h+ ('evaluate' | 'eval') \h* '=' \h* $<evaluate>=(TRUE | T | FALSE | F) | \h*] '}' | $<lang>=('perl6' | 'raku') ]
     $<code>=[<!before $mdTicks> .]*
     $mdTicks
 }
