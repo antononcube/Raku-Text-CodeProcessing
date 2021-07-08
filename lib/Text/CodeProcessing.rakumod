@@ -69,6 +69,7 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
             "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ "=end output";
 }
 
+
 ##===========================================================
 ## Dictionaries of file-type => sub
 ##===========================================================
@@ -87,6 +88,11 @@ my %fileTypeToReplaceSub =
 ##===========================================================
 ## Evaluation
 ##===========================================================
+
+#| Adds a prompt to multi-line text.
+sub add-prompt( Str:D $prompt, Str:D $text) {
+    $prompt ~ $text.subst( "\n", "\n$prompt", :g)
+}
 
 #| Evaluates a code chunk in a REPL sandbox.
 sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is export {
@@ -107,7 +113,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is 
     #    say '$p.exception : ', $p.exception;
 
     ## Result with prompts
-    ($p.exception ?? $evalErrorPrompt ~ $p.exception ~ "\n" !! '') ~ $evalOutputPrompt ~ ($out // $p.output ~ "\n")
+    ($p.exception ?? add-prompt($evalErrorPrompt, $p.exception.Str.trim) ~ "\n" !! '') ~ add-prompt($evalOutputPrompt, ($out // $p.output).trim) ~ "\n"
 }
 
 
