@@ -20,10 +20,10 @@ my regex MarkdownSearch {
 }
 
 #| Markdown replace sub
-sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
+sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
     $mdTicks ~ $<lang> ~ $<code> ~ $mdTicks ~
             (!$<evaluate> || $<evaluate>.Str (elem) <TRUE T>
-                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ $mdTicks
+                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt, :$promptPerLine) ~ $mdTicks
                     !! '');
 }
 
@@ -43,9 +43,9 @@ my regex OrgModeSearch {
 }
 
 #| Org-mode replace sub
-sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
+sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
     $orgBeginSrc ~ ' ' ~ $<lang> ~ $<ccrest> ~ "\n" ~ $<code> ~ $orgEndSrc ~
-            "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ');
+            "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ', :$promptPerLine);
 }
 
 
@@ -64,9 +64,9 @@ my regex Pod6Search {
 }
 
 #| Pod6 replace sub
-sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ') {
+sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
     $podBeginSrc ~ "\n" ~ $<code> ~ $podEndSrc ~
-            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt) ~ "=end output";
+            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt, :$promptPerLine) ~ "=end output";
 }
 
 
@@ -90,12 +90,12 @@ my %fileTypeToReplaceSub =
 ##===========================================================
 
 #| Adds a prompt to multi-line text.
-sub add-prompt( Str:D $prompt, Str:D $text) {
-    $prompt ~ $text.subst( "\n", "\n$prompt", :g)
+sub add-prompt( Str:D $prompt, Str:D $text, Bool :$promptPerLine = True) {
+    $prompt ~ ( $promptPerLine ?? $text.subst( "\n", "\n$prompt", :g) !! $text )
 }
 
 #| Evaluates a code chunk in a REPL sandbox.
-sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is export {
+sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt, Bool :$promptPerLine = True) is export {
 
     my $out;
 
@@ -113,7 +113,9 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is 
     #    say '$p.exception : ', $p.exception;
 
     ## Result with prompts
-    ($p.exception ?? add-prompt($evalErrorPrompt, $p.exception.Str.trim) ~ "\n" !! '') ~ add-prompt($evalOutputPrompt, ($out // $p.output).trim) ~ "\n"
+    ($p.exception ?? add-prompt($evalErrorPrompt, $p.exception.Str.trim, :$promptPerLine) ~ "\n" !! '') ~
+            add-prompt($evalOutputPrompt, ($out // $p.output).trim, :$promptPerLine) ~
+            "\n"
 }
 
 
@@ -125,7 +127,8 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is 
 sub StringCodeChunksEvaluation(Str:D $input,
                                Str:D $docType,
                                Str:D :$evalOutputPrompt = '# ',
-                               Str:D :$evalErrorPrompt = '#ERROR: ') is export {
+                               Str:D :$evalErrorPrompt = '#ERROR: ',
+                               Bool :$promptPerLine = True) is export {
 
     die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys}"
     unless $docType (elem) %fileTypeToReplaceSub.keys;
@@ -136,7 +139,8 @@ sub StringCodeChunksEvaluation(Str:D $input,
     ## Process code chunks (weave output)
     $input.subst: %fileTypeToSearchSub{$docType}, -> $s { %fileTypeToReplaceSub{$docType}($sandbox, $s,
                                                                                           :$evalOutputPrompt,
-                                                                                          :$evalErrorPrompt) }, :g;
+                                                                                          :$evalErrorPrompt,
+                                                                                          :$promptPerLine) }, :g;
 }
 
 
@@ -149,7 +153,8 @@ sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
                              Str :$evalOutputPrompt = '# ',
                              Str :$evalErrorPrompt = '#ERROR: ',
-                             Bool :$noteOutputFileName = False) is export {
+                             Bool :$noteOutputFileName = False,
+                             Bool :$promptPerLine = True) is export {
 
     ## Determine the output file name and type
     my Str $fileNameNew;
@@ -179,5 +184,5 @@ sub FileCodeChunksEvaluation(Str $fileName,
     }
 
     ## Process code chunks (weave output) and spurt in a file
-    spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt) )
+    spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt, :$promptPerLine) )
 }
