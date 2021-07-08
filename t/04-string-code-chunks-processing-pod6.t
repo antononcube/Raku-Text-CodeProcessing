@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 3;
+plan 6;
 
 #============================================================
 # 1 pod6 - Simple
@@ -61,7 +61,85 @@ is
 
 
 #============================================================
-# 3 pod6 - State
+# 3 pod6 - multi-line (my)
+#============================================================
+$code = q:to/INIT/;
+=begin code
+my $ans = "43\n333\n32";
+=end code
+INIT
+
+$resCode = q:to/INIT/;
+=begin code
+my $ans = "43\n333\n32";
+=end code
+=begin output
+#OUT:43
+#OUT:333
+#OUT:32
+=end output
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'pod6', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'my $ans = "43\n333\n32";';
+
+
+#============================================================
+# 4 pod6 - multi-line (say)
+#============================================================
+$code = q:to/INIT/;
+=begin code
+say "43\n333\n32";
+=end code
+INIT
+
+$resCode = q:to/INIT/;
+=begin code
+say "43\n333\n32";
+=end code
+=begin output
+#OUT:43
+#OUT:333
+#OUT:32
+=end output
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'pod6', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'say "43\n333\n32";';
+
+
+#============================================================
+# 5 pod6 - multi-line (say) one prompt
+#============================================================
+$code = q:to/INIT/;
+=begin code
+say "43\n333\n32";
+=end code
+INIT
+
+$resCode = q:to/INIT/;
+=begin code
+say "43\n333\n32";
+=end code
+=begin output
+#OUT:43
+333
+32
+=end output
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'pod6', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:', :!promptPerLine),
+        $resCode,
+        ':!promptPerLine; say "43\n333\n32";';
+
+
+#============================================================
+# 6 pod6 - State
 #============================================================
 $code = q:to/INIT/;
 Here is a variable:

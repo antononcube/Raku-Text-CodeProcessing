@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 4;
+plan 7;
 
 #============================================================
 # 1 org-mode - Simple
@@ -85,7 +85,85 @@ is
 
 
 #============================================================
-# 4 org-mode - State
+# 4 org-mode - multi-line (my)
+#============================================================
+$code = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+INIT
+
+$resCode = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+#+RESULTS:
+: 43
+: 333
+: 32
+
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'my $ans = "43\n333\n32"';
+
+
+#============================================================
+# 5 org-mode - multi-line (my)
+#============================================================
+$code = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+INIT
+
+$resCode = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+#+RESULTS:
+: 43
+: 333
+: 32
+
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'say "43\n333\n32"';
+
+
+#============================================================
+# 6 org-mode - multi-line (say) one prompt
+#============================================================
+$code = q:to/INIT/;
+#+BEGIN_SRC raku
+say "43\n333\n32";
+#+END_SRC
+INIT
+
+$resCode = q:to/INIT/;
+#+BEGIN_SRC raku
+say "43\n333\n32";
+#+END_SRC
+#+RESULTS:
+: 43
+333
+32
+
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:', :!promptPerLine),
+        $resCode,
+        ':!promptPerLine; say "43\n333\n32"';
+
+
+#============================================================
+# 7 org-mode - State
 #============================================================
 $code = q:to/INIT/;
 Here is a variable:
