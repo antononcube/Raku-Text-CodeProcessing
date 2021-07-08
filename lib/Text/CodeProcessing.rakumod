@@ -88,7 +88,7 @@ my %fileTypeToReplaceSub =
 ## Evaluation
 ##===========================================================
 
-#| Evaluation of code chunk
+#| Evaluates a code chunk in a REPL sandbox.
 sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is export {
 
     my $out;
@@ -115,7 +115,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt) is 
 ## StringCodeChunksEvaluation
 ##===========================================================
 
-#| The main function
+#| Evaluates code chunks in a string.
 sub StringCodeChunksEvaluation(Str:D $input,
                                Str:D $docType,
                                Str:D :$evalOutputPrompt = '# ',
@@ -138,6 +138,7 @@ sub StringCodeChunksEvaluation(Str:D $input,
 ## FileCodeChunksEvaluation
 ##===========================================================
 
+#| Evaluates code chunks in a file.
 sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
                              Str :$evalOutputPrompt = '# ',
@@ -164,7 +165,7 @@ sub FileCodeChunksEvaluation(Str $fileName,
     elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
     elsif $fileName.match(/ .* \. pod6 $ /) { $fileType = 'pod6' }
     else {
-        die "Unknown file type.";
+        die "Unknown file type (extension). The file type (extension) is expectecd to be one of {<md MD Rmd org pod6>}.";
     }
 
     if $noteOutputFileName {
