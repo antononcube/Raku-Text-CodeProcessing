@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 6;
+plan 8;
 
 #============================================================
 # 1 markdown - Simple
@@ -102,7 +102,59 @@ is
 
 
 #============================================================
-# 5 markdown - State
+# 5 markdown - multi-line (my)
+#============================================================
+$code = q:to/INIT/;
+```raku
+my $ans = "43\n333\n32";
+```
+INIT
+
+$resCode = q:to/INIT/;
+```raku
+my $ans = "43\n333\n32";
+```
+```
+#OUT:43
+#OUT:333
+#OUT:32
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'eval=FALSE: my $answer = 42;';
+
+
+#============================================================
+# 6 markdown - multi-line (say)
+#============================================================
+$code = q:to/INIT/;
+```raku
+say "43\n333\n32";
+```
+INIT
+
+$resCode = q:to/INIT/;
+```raku
+say "43\n333\n32";
+```
+```
+#OUT:43
+#OUT:333
+#OUT:32
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'eval=FALSE: my $answer = 42;';
+
+
+#============================================================
+# 7 markdown - State
 #============================================================
 $code = q:to/INIT/;
 ```{raku}
@@ -135,7 +187,7 @@ is
 
 
 #============================================================
-# 6 markdown - State incomplete code
+# 8 markdown - State incomplete code
 #============================================================
 $code = q:to/INIT/;
 ```{raku}
