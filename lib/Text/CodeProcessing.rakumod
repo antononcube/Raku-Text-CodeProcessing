@@ -145,20 +145,38 @@ sub StringCodeChunksEvaluation(Str:D $input,
 
 
 ##===========================================================
-## FileCodeChunksEvaluation
+## StringCodeChunksExtraction
+##===========================================================
+
+#| Extracts code from code chunks in a string.
+sub StringCodeChunksExtraction(Str:D $input,
+                               Str:D $docType) is export {
+
+    die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys}"
+    unless $docType (elem) %fileTypeToReplaceSub.keys;
+
+    ## Process code chunks (weave output)
+    $input.match( %fileTypeToSearchSub{$docType}, :g).map({ trim($_.<code>) }).join("\n")
+}
+
+
+##===========================================================
+## FileCodeChunksProcessing
 ##===========================================================
 
 #| Evaluates code chunks in a file.
-sub FileCodeChunksEvaluation(Str $fileName,
+sub FileCodeChunksProcessing(Str $fileName,
                              Str :$outputFileName,
                              Str :$evalOutputPrompt = '# ',
                              Str :$evalErrorPrompt = '#ERROR: ',
                              Bool :$noteOutputFileName = False,
-                             Bool :$promptPerLine = True) is export {
+                             Bool :$promptPerLine = True,
+                             Bool :$tangle = False) {
 
     ## Determine the output file name and type
     my Str $fileNameNew;
     my Str $fileType;
+    my Str $autoSuffix = $tangle ?? '_woven' !! '_tangled';
 
     with $outputFileName {
         $fileNameNew = $outputFileName
@@ -166,9 +184,9 @@ sub FileCodeChunksEvaluation(Str $fileName,
         ## If the input file name has extension that is one of <md MD Rmd org pod6>
         ## then insert "_weaved" before the extension.
         if $fileName.match(/ .* \. [md | MD | Rmd | org | pod6] $ /) {
-            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ '_weaved.' ~ $<ext> });
+            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ $autoSuffix ~ '.' ~ $<ext> });
         } else {
-            $fileNameNew = $fileName ~ '_weaved';
+            $fileNameNew = $fileName ~ $autoSuffix;
         }
     }
 
@@ -184,5 +202,38 @@ sub FileCodeChunksEvaluation(Str $fileName,
     }
 
     ## Process code chunks (weave output) and spurt in a file
-    spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt, :$promptPerLine) )
+    if $tangle {
+        spurt( $fileNameNew, StringCodeChunksExtraction(slurp($fileName), $fileType) )
+    } else {
+        spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt, :$promptPerLine) )
+    }
+}
+
+
+##===========================================================
+## FileCodeChunksEvaluation
+##===========================================================
+
+#| Evaluates code chunks in a file.
+sub FileCodeChunksEvaluation(Str $fileName,
+                             Str :$outputFileName,
+                             Str :$evalOutputPrompt = '# ',
+                             Str :$evalErrorPrompt = '#ERROR: ',
+                             Bool :$noteOutputFileName = False,
+                             Bool :$promptPerLine = True) is export {
+
+    FileCodeChunksProcessing( $fileName, :$outputFileName, :$evalOutputPrompt, :$evalErrorPrompt, :$noteOutputFileName, :$promptPerLine, :!tangle)
+}
+
+
+##===========================================================
+## FileCodeChunksExtraction
+##===========================================================
+
+#| Extracts code from code chunks in a file.
+sub FileCodeChunksExtraction(Str $fileName,
+                             Str :$outputFileName,
+                             Bool :$noteOutputFileName = False) is export {
+
+    FileCodeChunksProcessing( $fileName, :$outputFileName, :$noteOutputFileName, :tangle)
 }
