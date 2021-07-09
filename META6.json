@@ -3,7 +3,7 @@
   "name": "Text::CodeProcessing",
   "api": "1",
   "auth": "github:antononcube",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "A package with functions for evaluation of code chunks in documents of different types (like Markdown, Org-mode, Pod.)",
   "authors": [
     "Anton Antonov"
