@@ -48,11 +48,36 @@ Here are the (optional) parameters:
 
 - `Bool :$noteOutputFileName = False` : whether to print out the name of the new file
 
-### Script
+- `Bool :$promptPerLine = True` : whether to put prompt to each output or error line or just the first one
 
-The [directory "./examples"](./examples) has a script file, 
-[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku),
+### Scripts
+
+The [directory "./examples"](./examples) has a script files, 
+[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku) and
+[`file-code-chunks-extract.raku`](./examples/file-code-chunks-extract.raku),
 that can be used from the command line. 
+
+Here are examples code chunks evaluation in a file named "doc.md":
+
+```shell
+file-code-chunks-eval.raku doc.md
+```
+
+```shell
+file-code-chunks-eval.raku file-code-chunks-eval.raku --evalOutputPrompt="## OUTPUT :: " --evalErrorPrompt="## ERROR :: " -o=doc_newly_weaved.md doc.md
+```
+
+Here is an example of code extraction from code chunks in a file named "doc.md":
+
+```shell
+file-code-chunks-extract.raku -o=doc_new_extract.md doc.md
+```
+
+If no output file name is specified then the script
+[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku)
+([`file-code-chunks-extract.raku`](./examples/file-code-chunks-extract.raku))
+makes a new file in the same directory with the string
+"_woven" ("_tangled") inserted into the input file name.
 
 ------
 
@@ -88,7 +113,7 @@ The following TODO items are ordered by priority, the most important are on top.
   
   - [ ] REPL availability
     
-  - [ ] File code chunks evaluation 
+  - [X] File code chunks evaluation 
     
 - [ ] Implement evaluation of Raku code chunks in Mathematica notebooks.
 
