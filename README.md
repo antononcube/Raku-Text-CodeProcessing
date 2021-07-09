@@ -57,7 +57,7 @@ The [directory "./examples"](./examples) has a script files,
 [`file-code-chunks-extract.raku`](./examples/file-code-chunks-extract.raku),
 that can be used from the command line. 
 
-Here are examples code chunks evaluation in a file named "doc.md":
+Here are script invocation examples for the code chunks evaluation in a file named "doc.md":
 
 ```shell
 file-code-chunks-eval.raku doc.md
@@ -67,7 +67,7 @@ file-code-chunks-eval.raku doc.md
 file-code-chunks-eval.raku file-code-chunks-eval.raku --evalOutputPrompt="## OUTPUT :: " --evalErrorPrompt="## ERROR :: " -o=doc_newly_weaved.md doc.md
 ```
 
-Here is an example of code extraction from code chunks in a file named "doc.md":
+Here is a script invocation example for code extraction from code chunks in a file named "doc.md":
 
 ```shell
 file-code-chunks-extract.raku -o=doc_new_extract.md doc.md
