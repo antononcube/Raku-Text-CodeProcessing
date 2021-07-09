@@ -176,7 +176,7 @@ sub FileCodeChunksProcessing(Str $fileName,
     ## Determine the output file name and type
     my Str $fileNameNew;
     my Str $fileType;
-    my Str $autoSuffix = $tangle ?? '_woven' !! '_tangled';
+    my Str $autoSuffix = $tangle ?? '_tangled' !! '_woven';
 
     with $outputFileName {
         $fileNameNew = $outputFileName
@@ -219,7 +219,7 @@ sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
                              Str :$evalOutputPrompt = '# ',
                              Str :$evalErrorPrompt = '#ERROR: ',
-                             Bool :$noteOutputFileName = False,
+                             Bool :$noteOutputFileName = True,
                              Bool :$promptPerLine = True) is export {
 
     FileCodeChunksProcessing( $fileName, :$outputFileName, :$evalOutputPrompt, :$evalErrorPrompt, :$noteOutputFileName, :$promptPerLine, :!tangle)
@@ -233,7 +233,7 @@ sub FileCodeChunksEvaluation(Str $fileName,
 #| Extracts code from code chunks in a file.
 sub FileCodeChunksExtraction(Str $fileName,
                              Str :$outputFileName,
-                             Bool :$noteOutputFileName = False) is export {
+                             Bool :$noteOutputFileName = True) is export {
 
     FileCodeChunksProcessing( $fileName, :$outputFileName, :$noteOutputFileName, :tangle)
 }
