@@ -4,7 +4,7 @@
   "api": "1",
   "auth": "github:antononcube",
   "version": "0.3.0",
-  "description": "A package with functions for evaluation of code chunks in documents of different types (like Markdown, Org-mode, Pod.)",
+  "description": "A package with functions for processing of code chunks in documents of different types (like Markdown, Org-mode, Pod6.)",
   "authors": [
     "Anton Antonov"
   ],
@@ -23,8 +23,12 @@
   "tags": [
     "parser",
     "evaluation",
+    "extraction",
     "code processing",
     "literate programming",
+    "markdown",
+    "org-mode",
+    "pod6",
     "weaving",
     "tangling"
   ],
