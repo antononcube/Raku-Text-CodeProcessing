@@ -17,8 +17,17 @@ code chunks in documents of different types (like
 
 ------
 
-## Installation 
+## Installation
 
+Package installations from both sources use [zef installer](https://github.com/ugexe/zef)
+(which should be bundled with the "standard" [Rakudo](https://rakudo.org) installation file.)
+
+To install the package from [Raku Modules / PAUSE](https://modules.raku.org)
+use the shell command:
+
+```
+zef install Text::CodeProcessing
+```
 
 To install the package from the GitHub repository use the shell command:
 
