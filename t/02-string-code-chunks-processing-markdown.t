@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 9;
+plan 10;
 
 #============================================================
 # 1 markdown - Simple
@@ -18,7 +18,7 @@ my $answer = 42;
 INIT
 
 my Str $resCode = q:to/INIT/;
-```raku
+```{raku}
 my $answer = 42;
 ```
 ```
@@ -36,13 +36,13 @@ is
 # 2 markdown - eval=TRUE
 #============================================================
 $code = q:to/INIT/;
-```{raku eval=TRUE}
+```{raku, eval=TRUE}
 my $answer = 42;
 ```
 INIT
 
 $resCode = q:to/INIT/;
-```raku
+```{raku, eval=TRUE}
 my $answer = 42;
 ```
 ```
@@ -66,7 +66,7 @@ my $answer = 42;
 INIT
 
 $resCode = q:to/INIT/;
-```raku
+```{raku eval=FALSE}
 my $answer = 42;
 ```
 INIT
@@ -192,13 +192,13 @@ $answer ** 2
 INIT
 
 $resCode = q:to/INIT/;
-```raku
+```{raku}
 my $answer = 42;
 ```
 ```
 #OUT:42
 ```
-```raku
+```{raku}
 $answer ** 2
 ```
 ```
@@ -225,14 +225,14 @@ $answer ** 2
 INIT
 
 $resCode = q:to/INIT/;
-```raku
+```{raku}
 my $answer = 42 *
 ```
 ```
 #ERR:Missing required term after infix
 #OUT:Nil
 ```
-```raku
+```{raku}
 $answer ** 2
 ```
 ```
@@ -246,5 +246,46 @@ is
         $resCode,
         'my $answer = 42 *; $answer ** 2';
 
+
+#============================================================
+# 9 markdown - DSL code
+#============================================================
+$code = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku-dsl
+DSL TARGET Julia-DataFrames;
+use data dfMeals;
+inner join with dfFinelyFoodName over FOODID;
+group by "Cuisine";
+find counts
+```
+INIT
+
+$resCode = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku-dsl
+DSL TARGET Julia-DataFrames;
+use data dfMeals;
+inner join with dfFinelyFoodName over FOODID;
+group by "Cuisine";
+find counts
+```
+```
+{
+  "DSLTARGET": "Julia-DataFrames",
+  "CODE": "obj = dfMeals\nobj = innerjoin( obj, dfFinelyFoodName, on = [:FOODID])\nobj = groupby( obj, [:Cuisine] )\nprint(combine(obj, nrow))",
+  "DSLFUNCTION": "proto sub ToDataQueryWorkflowCode (Str $command, Str $target = \"tidyverse\") {*}",
+  "USERID": "",
+  "DSL": "DSL::English::DataQueryWorkflows"
+}
+```
+INIT
+
+my Str $dslTarget = 'DSLTARGET": "Julia-DataFrames",';
+
+like
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
+        / $($code) \s* '```' \s* '{' .* $($dslTarget) .* / ,
+        'meals data wrangling in Julia';
 
 done-testing;
