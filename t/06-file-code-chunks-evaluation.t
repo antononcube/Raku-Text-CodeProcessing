@@ -46,7 +46,7 @@ $answer ** 2
 ```
 
 Here are cubed and cubed of the squared:
-```raku
+```{raku}
 $answer ** 3
 $answer ** 2 ** 3
 ```
