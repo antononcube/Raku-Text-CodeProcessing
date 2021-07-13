@@ -10,7 +10,7 @@ use Text::CodeProcessing::REPLSandbox;
 ##===========================================================
 
 #| Extract parameters from Match object
-sub CodeChunkParametersExtraction( $/, %defaults --> Hash) {
+sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) {
 
     my $name = $<name> ?? $<name>.Str !! '';
     my $lang = $<lang>.Str;
@@ -20,8 +20,8 @@ sub CodeChunkParametersExtraction( $/, %defaults --> Hash) {
     my $errorPrompt = %defaults<errorPrompt> // "# ERROR: ";
 
     # If a list of parameters is specified extract values
-    if $<params><md-list-of-params> {
-        for $<params><md-list-of-params>.values -> $pair {
+    if $<params>{$list-of-params} {
+        for $<params>{$list-of-params}.values -> $pair {
 
             if $pair<param>.Str (elem) <eval evaluate> {
 
@@ -66,7 +66,7 @@ sub CodeChunkParametersExtraction( $/, %defaults --> Hash) {
 constant $mdTicks = '```';
 
 #| Markdown pair assignment
-my regex md-assign-pair { $<param>=(<alpha>+) \h* '=' \h* $<value>=(<-[ \{ \} \s ]>*) }
+my regex md-assign-pair { $<param>=(<.alpha>+) \h* '=' \h* $<value>=(<-[ \{ \} \s ]>*) }
 
 #| Markdown list of assignments
 my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
@@ -84,7 +84,8 @@ my regex MarkdownSearch {
 #| Markdown replace sub
 sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
 
-    my %params = CodeChunkParametersExtraction($<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
+    # Determine the code chunk parameters
+    my %params = CodeChunkParametersExtraction( 'md-list-of-params', $<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
 
     # Construct the replacement string
     $<header> ~ $<code> ~ $mdTicks ~
@@ -98,23 +99,37 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
 ## Org-mode functions
 ##===========================================================
 
+#| Org-mode code block openning
 constant $orgBeginSrc = '#+BEGIN_SRC';
+
+#| Org-mode code block closing
 constant $orgEndSrc = '#+END_SRC';
+
+#| Markdown pair assignment
+my regex org-assign-pair { ':' $<param>=(<.alpha>+) \h+ $<value>=(\S*) | ':' $<param>=(<.alpha>+) }
+
+#| Markdown list of assignments
+my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
 
 #| Org-mode code chunk search regex
 my regex OrgModeSearch {
-    $<header>=( $orgBeginSrc \h* $<lang>=('perl6' | 'raku' | 'raku-dsl') $<ccrest>=(\V*) \v)
+    $<header>=( $orgBeginSrc \h* $<lang>=('perl6' | 'raku' | 'raku-dsl')
+    [ \h+ $<params>=(<org-list-of-params>) ]? \h* \v )
     $<code>=[<!before $orgEndSrc> .]*
     $orgEndSrc
 }
 
 #| Org-mode replace sub
-sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
+sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalErrorPrompt = ':ERR: ', Bool :$promptPerLine = True) {
 
-    my %params = CodeChunkParametersExtraction($<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
+    # Determine the code chunk parameters
+    my %params = CodeChunkParametersExtraction( 'org-list-of-params', $<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
 
+    # Construct the replacement string
     $<header> ~ $<code> ~ $orgEndSrc ~
-            "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, ': ', ':ERROR: ', lang => %params<lang>, :$promptPerLine);
+            ( %params<evaluate>.lc (elem) <true t yes>
+                    ?? "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine)
+                    !! "\n" );
 }
 
 
