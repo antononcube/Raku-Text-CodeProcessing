@@ -51,13 +51,21 @@ Here are the (optional) parameters:
 
 - `Str :$outputFileName` : output file name
   
-- `Str :$evalOutputPrompt = '# '` : code chunk output prompt
+- `Str :$evalOutputPrompt = 'AUTO'` : code chunk output prompt
 
-- `Str :$evalErrorPrompt = '#ERROR: '` : code chunk error prompt
+- `Str :$evalErrorPrompt = 'AUTO'` : code chunk error prompt
 
 - `Bool :$noteOutputFileName = False` : whether to print out the name of the new file
 
 - `Bool :$promptPerLine = True` : whether to put prompt to each output or error line or just the first one
+
+When the prompt arguments are given the value `'AUTO'` then the actual prompt values are selected according to the file type:
+
+- Markdown : `evalOutputPrompt = '# '`, `evalErrorPrompt = '#ERROR: '`
+
+- Org-mode : `evalOutputPrompt = ': '`, `evalErrorPrompt = ':ERROR: '`
+
+- Pod6 : `evalOutputPrompt = '# '`, `evalErrorPrompt = '#ERROR: '`
 
 ### Scripts
 
@@ -123,7 +131,12 @@ The following TODO items are ordered by priority, the most important are on top.
   - [ ] REPL availability
     
   - [X] File code chunks evaluation 
-    
+  
+- [X] Implement handling of code chunk parameters.
+
+- [ ] Implement data arguments for code chunks.
+      (As in [Babel org-mode](https://orgmode.org/manual/Environment-of-a-Code-Block.html).)
+
 - [ ] Implement evaluation of Raku code chunks in Mathematica notebooks.
 
 - [ ] Make the functionalities to work with languages other than Raku.
