@@ -60,13 +60,13 @@ is
 # 3 markdown - eval=FALSE
 #============================================================
 $code = q:to/INIT/;
-```{raku eval=FALSE}
+```{raku, eval=FALSE}
 my $answer = 42;
 ```
 INIT
 
 $resCode = q:to/INIT/;
-```{raku eval=FALSE}
+```{raku, eval=FALSE}
 my $answer = 42;
 ```
 INIT
