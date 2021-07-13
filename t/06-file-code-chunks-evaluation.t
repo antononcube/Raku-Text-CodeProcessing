@@ -120,7 +120,7 @@ INIT
 $doc-file = $*TMPDIR.child("temp_doc.org");
 $doc-file.spurt($code);
 
-FileCodeChunksEvaluation( $doc-file.Str, outputFileName => $doc-file.Str.subst('.org', '_new.org') );
+FileCodeChunksEvaluation( $doc-file.Str, evalOutputPrompt => ': ', evalErrorPrompt => ':ERROR: ', outputFileName => $doc-file.Str.subst('.org', '_new.org') );
 
 my $org-file-new = $*TMPDIR.child("temp_doc_new.org");
 
