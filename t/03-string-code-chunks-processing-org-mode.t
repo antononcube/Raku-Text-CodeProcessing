@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 7;
+plan 8;
 
 #============================================================
 # 1 org-mode - Simple
@@ -27,22 +27,22 @@ my $answer = 42;
 INIT
 
 is
-        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:'),
         $resCode,
         'my $answer = 42;';
 
 
 #============================================================
-# 2 org-mode - :results output :exports both session
+# 2 org-mode - :eval yes
 #============================================================
 $code = q:to/INIT/;
-#+BEGIN_SRC raku :results output :exports both :session
+#+BEGIN_SRC raku :eval yes
 my $answer = 42;
 #+END_SRC
 INIT
 
 $resCode = q:to/INIT/;
-#+BEGIN_SRC raku :results output :exports both :session
+#+BEGIN_SRC raku :eval yes
 my $answer = 42;
 #+END_SRC
 #+RESULTS:
@@ -51,13 +51,34 @@ my $answer = 42;
 INIT
 
 is
-        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
-        $resCode,
-        'eval=TRUE: my $answer = 42;';
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:').trim,
+        $resCode.trim,
+        ':eval yes; my $answer = 42;';
 
 
 #============================================================
-# 3 org-mode - :results output :exports both session
+# 3 org-mode - :eval no
+#============================================================
+$code = q:to/INIT/;
+#+BEGIN_SRC raku :eval no
+my $answer = 42;
+#+END_SRC
+INIT
+
+$resCode = q:to/INIT/;
+#+BEGIN_SRC raku :eval no
+my $answer = 42;
+#+END_SRC
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:').trim,
+        $resCode.trim,
+        ':eval no; my $answer = 42;';
+
+
+#============================================================
+# 4 org-mode - :results output :exports both session
 #============================================================
 $code = q:to/INIT/;
 This is an example chunk:
@@ -73,7 +94,7 @@ This is an example chunk:
 my $answer = 42;
 #+END_SRC
 #+RESULTS:
-: 42
+#OUT:42
 
 Got it!
 INIT
@@ -81,33 +102,7 @@ INIT
 is
         StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
         $resCode,
-        'eval=TRUE: my $answer = 42;';
-
-
-#============================================================
-# 4 org-mode - multi-line (my)
-#============================================================
-$code = q:to/INIT/;
-#+BEGIN_SRC raku
-my $ans = "43\n333\n32";
-#+END_SRC
-INIT
-
-$resCode = q:to/INIT/;
-#+BEGIN_SRC raku
-my $ans = "43\n333\n32";
-#+END_SRC
-#+RESULTS:
-: 43
-: 333
-: 32
-
-INIT
-
-is
-        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
-        $resCode,
-        'my $ans = "43\n333\n32"';
+        ':session; my $answer = 42;';
 
 
 #============================================================
@@ -131,13 +126,39 @@ my $ans = "43\n333\n32";
 INIT
 
 is
-        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:'),
+        $resCode,
+        'my $ans = "43\n333\n32"';
+
+
+#============================================================
+# 6 org-mode - multi-line (my)
+#============================================================
+$code = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+INIT
+
+$resCode = q:to/INIT/;
+#+BEGIN_SRC raku
+my $ans = "43\n333\n32";
+#+END_SRC
+#+RESULTS:
+: 43
+: 333
+: 32
+
+INIT
+
+is
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:'),
         $resCode,
         'say "43\n333\n32"';
 
 
 #============================================================
-# 6 org-mode - multi-line (say) one prompt
+# 7 org-mode - multi-line (say) one prompt
 #============================================================
 $code = q:to/INIT/;
 #+BEGIN_SRC raku
@@ -150,7 +171,7 @@ $resCode = q:to/INIT/;
 say "43\n333\n32";
 #+END_SRC
 #+RESULTS:
-: 43
+#OUT:43
 333
 32
 
@@ -163,7 +184,7 @@ is
 
 
 #============================================================
-# 7 org-mode - State
+# 8 org-mode - State
 #============================================================
 $code = q:to/INIT/;
 Here is a variable:
@@ -194,7 +215,7 @@ $answer ** 2
 INIT
 
 is
-        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        StringCodeChunksEvaluation($code, 'org-mode', evalOutputPrompt => ': ', evalErrorPrompt => '#ERR:'),
         $resCode,
         'my $answer = 42; $answer ** 2';
 
