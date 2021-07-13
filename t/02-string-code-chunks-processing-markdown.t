@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 10;
+plan 9;
 
 #============================================================
 # 1 markdown - Simple
@@ -246,46 +246,5 @@ is
         $resCode,
         'my $answer = 42 *; $answer ** 2';
 
-
-#============================================================
-# 9 markdown - DSL code
-#============================================================
-$code = q:to/INIT/;
-Here we translate into Julia the data wrangling workflow:
-```raku-dsl
-DSL TARGET Julia-DataFrames;
-use data dfMeals;
-inner join with dfFinelyFoodName over FOODID;
-group by "Cuisine";
-find counts
-```
-INIT
-
-$resCode = q:to/INIT/;
-Here we translate into Julia the data wrangling workflow:
-```raku-dsl
-DSL TARGET Julia-DataFrames;
-use data dfMeals;
-inner join with dfFinelyFoodName over FOODID;
-group by "Cuisine";
-find counts
-```
-```
-{
-  "DSLTARGET": "Julia-DataFrames",
-  "CODE": "obj = dfMeals\nobj = innerjoin( obj, dfFinelyFoodName, on = [:FOODID])\nobj = groupby( obj, [:Cuisine] )\nprint(combine(obj, nrow))",
-  "DSLFUNCTION": "proto sub ToDataQueryWorkflowCode (Str $command, Str $target = \"tidyverse\") {*}",
-  "USERID": "",
-  "DSL": "DSL::English::DataQueryWorkflows"
-}
-```
-INIT
-
-my Str $dslTarget = 'DSLTARGET": "Julia-DataFrames",';
-
-like
-        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
-        / $($code) \s* '```' \s* '{' .* $($dslTarget) .* / ,
-        'meals data wrangling in Julia';
 
 done-testing;
