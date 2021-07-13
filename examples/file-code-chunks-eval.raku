@@ -2,6 +2,6 @@
 
 use Text::CodeProcessing;
 
-sub MAIN(Str $fileName, Str :$o, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
+sub MAIN(Str $fileName, Str :$o, Str :$evalOutputPrompt = 'AUTO', Str :$evalErrorPrompt = 'AUTO', Bool :$promptPerLine = True) {
     FileCodeChunksEvaluation( $fileName, outputFileName => $o, :$evalOutputPrompt, :$evalErrorPrompt, :noteOutputFileName, :$promptPerLine)
 }

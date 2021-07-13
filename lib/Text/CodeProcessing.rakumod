@@ -85,7 +85,13 @@ my regex MarkdownSearch {
 sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
 
     # Determine the code chunk parameters
-    my %params = CodeChunkParametersExtraction( 'md-list-of-params', $<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
+    my %params =
+            CodeChunkParametersExtraction( 'md-list-of-params', $<header>,
+                    %( lang => 'raku',
+                       evaluate => 'TRUE',
+                       outputPrompt => $evalOutputPrompt eq 'AUTO' ?? '# ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt eq 'AUTO' ?? '#ERROR: ' !! $evalErrorPrompt,
+                       format => 'JSON' ) );
 
     # Construct the replacement string
     $<header> ~ $<code> ~ $mdTicks ~
@@ -120,10 +126,16 @@ my regex OrgModeSearch {
 }
 
 #| Org-mode replace sub
-sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalErrorPrompt = ':ERR: ', Bool :$promptPerLine = True) {
+sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalErrorPrompt = ':ERROR: ', Bool :$promptPerLine = True) {
 
     # Determine the code chunk parameters
-    my %params = CodeChunkParametersExtraction( 'org-list-of-params', $<header>, %( lang => 'raku', evaluate => 'TRUE', outputPrompt => $evalOutputPrompt, errorPrompt => $evalErrorPrompt, format => 'JSON' ) );
+    my %params =
+            CodeChunkParametersExtraction( 'org-list-of-params', $<header>,
+                    %( lang => 'raku',
+                       evaluate => 'TRUE',
+                       outputPrompt => $evalOutputPrompt eq 'AUTO' ?? ': ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt eq 'AUTO' ?? ':ERROR: ' !! $evalErrorPrompt,
+                       format => 'JSON' ) );
 
     # Construct the replacement string
     $<header> ~ $<code> ~ $orgEndSrc ~
@@ -149,8 +161,12 @@ my regex Pod6Search {
 
 #| Pod6 replace sub
 sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
+
+    my $outputPrompt = $evalOutputPrompt eq 'AUTO' ?? '# ' !! $evalOutputPrompt;
+    my $errorPrompt = $evalErrorPrompt eq 'AUTO' ?? '#ERROR: ' !! $evalErrorPrompt;
+
     $<header> ~ $<code> ~ $podEndSrc ~
-            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $evalOutputPrompt, $evalErrorPrompt, :$promptPerLine) ~ "=end output";
+            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $outputPrompt, $errorPrompt, :$promptPerLine) ~ "=end output";
 }
 
 
@@ -240,8 +256,8 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
 #| Evaluates code chunks in a string.
 sub StringCodeChunksEvaluation(Str:D $input,
                                Str:D $docType,
-                               Str:D :$evalOutputPrompt = '# ',
-                               Str:D :$evalErrorPrompt = '#ERROR: ',
+                               Str:D :$evalOutputPrompt = 'AUTO',
+                               Str:D :$evalErrorPrompt = 'AUTO',
                                Bool :$promptPerLine = True) is export {
 
     die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys}"
@@ -281,8 +297,8 @@ sub StringCodeChunksExtraction(Str:D $input,
 #| Evaluates code chunks in a file.
 sub FileCodeChunksProcessing(Str $fileName,
                              Str :$outputFileName,
-                             Str :$evalOutputPrompt = '# ',
-                             Str :$evalErrorPrompt = '#ERROR: ',
+                             Str :$evalOutputPrompt = 'AUTO',
+                             Str :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = False,
                              Bool :$promptPerLine = True,
                              Bool :$tangle = False) {
@@ -331,8 +347,8 @@ sub FileCodeChunksProcessing(Str $fileName,
 #| Evaluates code chunks in a file.
 sub FileCodeChunksEvaluation(Str $fileName,
                              Str :$outputFileName,
-                             Str :$evalOutputPrompt = '# ',
-                             Str :$evalErrorPrompt = '#ERROR: ',
+                             Str :$evalOutputPrompt = 'AUTO',
+                             Str :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = True,
                              Bool :$promptPerLine = True) is export {
 
