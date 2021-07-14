@@ -1,0 +1,9 @@
+begin:
+===
+  ```{raku}
+  my $answer = 42;
+  ```
+  ```
+  regexp: ^^ \S+ \s+ 'OUTPUT :: 42'
+  ```
+end:
