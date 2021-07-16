@@ -109,6 +109,9 @@ class Text::CodeProcessing::REPLSandbox is export {
             $_ = Nil if $_ === Any;
         }
 
+        #| If the gist is "non-result" make it Nil
+        if $gist === Any or $gist === Nil { $gist = "Nil"}
+
         #| REPL context is saved/stored
         if $*MAIN_CTX and !$no-persist {
             $!save_ctx := $*MAIN_CTX;
