@@ -238,12 +238,22 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
         }
     }
 
+    ## Redirecting stdout to a custom $err
+    my $err;
+
+    my $*ERR = $*ERR but role {
+        method print (*@args) {
+            $err ~= @args
+        }
+    }
+
     # REPL sandbox execution
     $sandbox.execution-count++;
     my $p = $sandbox.eval($code-to-eval, :store($sandbox.execution-count));
 
     ## Result with prompts
     ($p.exception ?? add-prompt($evalErrorPrompt, $p.exception.Str.trim, :$promptPerLine) ~ "\n" !! '') ~
+            ($err ?? add-prompt($evalErrorPrompt, $err.Str.trim, :$promptPerLine) ~ "\n" !! '') ~
             add-prompt($evalOutputPrompt, ($out // $p.output).trim, :$promptPerLine) ~
             "\n"
 }
