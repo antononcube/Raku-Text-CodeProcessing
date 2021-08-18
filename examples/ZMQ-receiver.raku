@@ -63,7 +63,7 @@ use Text::CodeProcessing;
 sub MAIN(Str :$url = 'tcp://127.0.0.1', Str :$port = '5555') {
 
     # Launch wolframscript with ZMQ socket
-    my Str $prepCode = 'Import["https://raw.githubusercontent.com/antononcube/MathematicaForPrediction/master/Misc/ComputationalSpecCompletion.m"];';
+    # my Str $prepCode = 'Import["https://raw.githubusercontent.com/antononcube/MathematicaForPrediction/master/Misc/ComputationalSpecCompletion.m"];';
     my $proc = Proc::Async.new: 'wolframscript','-code', MakeWLCode(:$url, :$port, :$prepCode):!proclaim;
     $proc.start;
 
@@ -72,7 +72,7 @@ sub MAIN(Str :$url = 'tcp://127.0.0.1', Str :$port = '5555') {
     my Net::ZMQ4::Socket $reciever .= new($context, ZMQ_REQ);
     $reciever.bind("$url:$port");
 
-    ## Evaluate symbolic expressions.
+    # Evaluate symbolic expressions.
     for ^4 -> $i {
         my $command = "InputForm[Expand[(a+x)^$i]]";
         $reciever.send($command);
@@ -81,7 +81,8 @@ sub MAIN(Str :$url = 'tcp://127.0.0.1', Str :$port = '5555') {
         say "Received : { $message.data-str }";
     }
 
-    ## Evaluate complicate DSL expressions.
+    # Evaluate complicate DSL expressions.
+    # Make sure the $prepCode above (with Import) is uncommented.
     #`[
     say "=" x 60;
     say 'Evaluate symbolic expressions';
