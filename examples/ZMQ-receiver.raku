@@ -32,6 +32,7 @@ Alternatively, if launch C<woflramscirpt> and with the code above given as code 
 
 use v6;
 
+#| Makes WL's ZeroMQ infinite loop program.
 sub MakeWLCode( Str :$url = 'tcp://127.0.0.1', Str :$port = '5555', Str :$prepCode = '', Bool :$proclaim = False) {
 
     my Str $resCode =
@@ -57,14 +58,15 @@ While[True,
 
 use Net::ZMQ4;
 use Net::ZMQ4::Constants;
-use Text::CodeProcessing::REPLSandbox;
-use Text::CodeProcessing;
 
+#| Main program.
 sub MAIN(Str :$url = 'tcp://127.0.0.1', Str :$port = '5555') {
 
-    # Launch wolframscript with ZMQ socket
+    # Prep code when experimenting with DSL translations by QAS.
     # my Str $prepCode = 'Import["https://raw.githubusercontent.com/antononcube/MathematicaForPrediction/master/Misc/ComputationalSpecCompletion.m"];';
-    my $proc = Proc::Async.new: 'wolframscript','-code', MakeWLCode(:$url, :$port, :$prepCode):!proclaim;
+
+    # Launch wolframscript with ZMQ socket
+    my $proc = Proc::Async.new: 'wolframscript','-code', MakeWLCode(:$url, :$port):!proclaim;
     $proc.start;
 
     # Socket to talk to clients
