@@ -1,6 +1,6 @@
 # Raku Text::CodeProcessing
 
-[![Build Status](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing.svg?branch=main)](https://travis-ci.com/antononcube/Raku-Text-CodeProcessing)
+[![Build Status](https://app.travis-ci.com/antononcube/Raku-Text-CodeProcessing.svg?branch=main)](https://app.travis-ci.com/github/antononcube/Raku-Text-CodeProcessing)
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Artistic%202.0-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
 
 ## In brief
