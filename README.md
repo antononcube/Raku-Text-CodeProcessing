@@ -131,7 +131,9 @@ The following TODO items are ordered by priority, the most important are on top.
   - [ ] REPL availability
     
   - [X] File code chunks evaluation 
-  
+
+  - [X] File code extraction from chunks 
+
 - [X] Implement handling of code chunk parameters.
 
 - [ ] Implement data arguments for code chunks.
@@ -149,7 +151,7 @@ The following TODO items are ordered by priority, the most important are on top.
 [BD1] Brian Duggan et al.,
 [p6-jupyter-kernel](https://github.com/bduggan/p6-jupyter-kernel),
 (2017-2020),
-[GitHug/bduggan](https://github.com/bduggan).
+[GitHub/bduggan](https://github.com/bduggan).
 
 [DS1] Daniel Sockwell,
 ["Weaving Raku: semiliterate programming in a beautiful language"](https://www.codesections.com/blog/weaving-raku/),
