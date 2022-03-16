@@ -70,29 +70,29 @@ When the prompt arguments are given the value `'AUTO'` then the actual prompt va
 ### Scripts
 
 The [directory "./examples"](./examples) has a script files, 
-[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku) and
-[`file-code-chunks-extract.raku`](./examples/file-code-chunks-extract.raku),
+[`file-code-chunks-eval`](bin/file-code-chunks-eval) and
+[`file-code-chunks-extract`](bin/file-code-chunks-extract),
 that can be used from the command line. 
 
 Here are script invocation examples for the code chunks evaluation in a file named "doc.md":
 
 ```shell
-file-code-chunks-eval.raku doc.md
+file-code-chunks-eval doc.md
 ```
 
 ```shell
-file-code-chunks-eval.raku file-code-chunks-eval.raku --evalOutputPrompt="## OUTPUT :: " --evalErrorPrompt="## ERROR :: " -o=doc_newly_weaved.md doc.md
+file-code-chunks-eval file-code-chunks-eval.raku --evalOutputPrompt="## OUTPUT :: " --evalErrorPrompt="## ERROR :: " -o=doc_newly_weaved.md doc.md
 ```
 
 Here is a script invocation example for code extraction from code chunks in a file named "doc.md":
 
 ```shell
-file-code-chunks-extract.raku -o=doc_new_extract.md doc.md
+file-code-chunks-extract -o=doc_new_extract.md doc.md
 ```
 
 If no output file name is specified then the script
-[`file-code-chunks-eval.raku`](./examples/file-code-chunks-eval.raku)
-([`file-code-chunks-extract.raku`](./examples/file-code-chunks-extract.raku))
+[`file-code-chunks-eval`](bin/file-code-chunks-eval)
+([`file-code-chunks-extract`](bin/file-code-chunks-extract))
 makes a new file in the same directory with the string
 "_woven" ("_tangled") inserted into the input file name.
 
@@ -143,6 +143,8 @@ The following TODO items are ordered by priority, the most important are on top.
 
 - [ ] Make the functionalities to work with languages other than Raku.
   - This is both difficult and low priority.
+  
+- [X] Comprehensive help for the CLI functions. 
 
 -----
 
