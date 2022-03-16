@@ -306,7 +306,7 @@ sub StringCodeChunksExtraction(Str:D $input,
 
 #| Evaluates code chunks in a file.
 sub FileCodeChunksProcessing(Str $fileName,
-                             Str :$outputFileName,
+                             :$outputFileName = Whatever,
                              Str :$evalOutputPrompt = 'AUTO',
                              Str :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = False,
@@ -318,9 +318,9 @@ sub FileCodeChunksProcessing(Str $fileName,
     my Str $fileType;
     my Str $autoSuffix = $tangle ?? '_tangled' !! '_woven';
 
-    with $outputFileName {
+    if $outputFileName.isa(Str) {
         $fileNameNew = $outputFileName
-    } else {
+    } elsif $outputFileName.isa(Whatever) {
         ## If the input file name has extension that is one of <md MD Rmd org pod6>
         ## then insert "_weaved" before the extension.
         if $fileName.match(/ .* \. [md | MD | Rmd | org | pod6] $ /) {
@@ -328,6 +328,8 @@ sub FileCodeChunksProcessing(Str $fileName,
         } else {
             $fileNameNew = $fileName ~ $autoSuffix;
         }
+    } else {
+        die 'The argument $outputFileName is expected to be string or Whatever.';
     }
 
     if $fileName.match(/ .* \. [md | MD | Rmd] $ /) { $fileType = 'markdown' }
@@ -356,7 +358,7 @@ sub FileCodeChunksProcessing(Str $fileName,
 
 #| Evaluates code chunks in a file.
 sub FileCodeChunksEvaluation(Str $fileName,
-                             Str :$outputFileName,
+                             :$outputFileName = Whatever,
                              Str :$evalOutputPrompt = 'AUTO',
                              Str :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = True,
@@ -372,7 +374,7 @@ sub FileCodeChunksEvaluation(Str $fileName,
 
 #| Extracts code from code chunks in a file.
 sub FileCodeChunksExtraction(Str $fileName,
-                             Str :$outputFileName,
+                             :$outputFileName = Whatever,
                              Bool :$noteOutputFileName = True) is export {
 
     FileCodeChunksProcessing( $fileName, :$outputFileName, :$noteOutputFileName, :tangle)
