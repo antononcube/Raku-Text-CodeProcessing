@@ -241,9 +241,13 @@ $answer ** 2
 ```
 INIT
 
-is
-        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
-        $resCode,
+my $resCodeUpdate = $resCode.subst('Variable \'$answer\' is not declared',
+        'Variable \'$answer\' is not declared. Perhaps you forgot a \'sub\' if this was intended to be part of a signature?');
+
+my $resRun = StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:');
+
+is $resRun eq $resCode || $resRun eq $resCodeUpdate,
+        True,
         'my $answer = 42 *; $answer ** 2';
 
 
