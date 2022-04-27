@@ -241,13 +241,33 @@ $answer ** 2
 ```
 INIT
 
+## This regex "replaces" the $resCode above.
+## The regex is needed in order to address past and new messages issued
+## for an undeclared variable. See:
+## https://github.com/antononcube/Raku-Text-CodeProcessing/issues/2
+my $resCodeRegex =
+/ '```' '{raku}' \s*
+'my $answer = 42 *' \s*
+'```' \s+
+'```' \s*
+'#ERR:Missing required term after infix' \s*
+'#OUT:Nil' \s*
+'```' \s*
+'```' '{raku}' \s* \n
+'$answer ** 2' \s* \n
+'```' \s*
+'```' \s*
+'#ERR:Variable \'$answer\' is not declared' .* .\s*
+'#OUT:Nil' \s*
+'```' /;
+
 my $resCodeUpdate = $resCode.subst('Variable \'$answer\' is not declared',
         'Variable \'$answer\' is not declared. Perhaps you forgot a \'sub\' if this was intended to be part of a signature?');
 
 my $resRun = StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:');
 
-is $resRun eq $resCode || $resRun eq $resCodeUpdate,
-        True,
+like $resRun,
+        $resCodeRegex,
         'my $answer = 42 *; $answer ** 2';
 
 
