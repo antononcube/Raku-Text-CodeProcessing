@@ -2,7 +2,7 @@
 
 # The initial version of the code was taken from : https://stackoverflow.com/a/57128623
 
-use v6;
+use v6.d;
 use Text::CodeProcessing::REPLSandbox;
 
 ##===========================================================
