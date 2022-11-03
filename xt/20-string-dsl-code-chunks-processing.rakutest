@@ -1,0 +1,80 @@
+use Test;
+
+use lib './lib';
+use lib '.';
+
+use Text::CodeProcessing;
+use Text::CodeProcessing::REPLSandbox;
+
+plan 1;
+
+# The following tests require that the package
+#   DSL::Shared::Utilities::ComprehensiveTranslation
+#   https://github.com/antononcube/Raku-DSL-Shared-Utilities-ComprehensiveTranslation
+# is installed.
+
+# If a code chink has 'raku-dsl' as language then the function
+# ToDSLCode from that package is "wrapped around" the code-chunk's content.
+
+#============================================================
+# 1 Verify required packages are installed
+#============================================================
+
+#| Checks if a module is installed.
+sub is-installed(Str $module-name) {
+    try {
+        require ::($module-name);
+        return True;
+    }
+    False;
+}
+
+if !is-installed("DSL::Shared::Utilities::ComprehensiveTranslation") {
+    skip-rest "The package DSL::Shared::Utilities::ComprehensiveTranslation is not installed, the remaining tests will fail";
+    exit;
+}
+
+
+#============================================================
+# 2 markdown - DSL code
+#============================================================
+my Str $code = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku-dsl
+DSL TARGET Julia-DataFrames;
+use data dfMeals;
+inner join with dfFinelyFoodName over FOODID;
+group by "Cuisine";
+find counts
+```
+INIT
+
+my Str $resCode = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku-dsl
+DSL TARGET Julia-DataFrames;
+use data dfMeals;
+inner join with dfFinelyFoodName over FOODID;
+group by "Cuisine";
+find counts
+```
+```
+{
+  "DSLTARGET": "Julia-DataFrames",
+  "CODE": "obj = dfMeals\nobj = innerjoin( obj, dfFinelyFoodName, on = [:FOODID])\nobj = groupby( obj, [:Cuisine] )\nprint(combine(obj, nrow))",
+  "DSLFUNCTION": "proto sub ToDataQueryWorkflowCode (Str $command, Str $target = \"tidyverse\") {*}",
+  "USERID": "",
+  "DSL": "DSL::English::DataQueryWorkflows"
+}
+```
+INIT
+
+my Str $dslTarget = '"DSLTARGET": "Julia-DataFrames"';
+
+like
+        StringCodeChunksEvaluation($code, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
+        / $($code) \s* '```' \s* '{' .* $($dslTarget) .* /,
+        'meals data wrangling in Julia';
+
+
+done-testing;
