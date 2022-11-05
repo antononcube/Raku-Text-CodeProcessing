@@ -6,8 +6,14 @@ my %*SUB-MAIN-OPTS = :named-anywhere;
 
 #| Extract content of code chunks in a Markdown, org-mode, or Pod6 file.
 sub MAIN(
-        Str $inputFileName where *.IO.f,   #= Input file name.
-        :o(:$output) = Whatever,           #= Output file; if not given the output file name is the input file name concatenated with "_tangled".
+        Str $inputFileName where *.IO.f,      #= Input file name.
+        Str :o(:$output) is copy = 'Whatever' #= Output file; if not given the output file name is the input file name concatenated with "_tangled".
          ) {
-    return FileCodeChunksExtraction( $inputFileName, outputFileName => $output, :noteOutputFileName)
+
+    my $outputLocal = $output;
+    if $output.lc ∈ <whatever auto automatic> {
+        $outputLocal = Whatever
+    };
+
+    return FileCodeChunksExtraction( $inputFileName, outputFileName => $outputLocal, :noteOutputFileName);
 }
