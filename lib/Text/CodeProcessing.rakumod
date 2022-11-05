@@ -154,7 +154,7 @@ constant $podEndSrc = '=end code';
 
 #| Pod6 code chunk search regex
 my regex Pod6Search {
-    $<header>=( $podBeginSrc \v )
+    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' ] '>' ]? \v )
     $<code>=[<!before $podEndSrc> .]*
     $podEndSrc
 }
@@ -323,7 +323,7 @@ sub FileCodeChunksProcessing(Str $fileName,
     } elsif $outputFileName.isa(Whatever) {
         ## If the input file name has extension that is one of <md MD Rmd org pod6>
         ## then insert "_weaved" before the extension.
-        if $fileName.match(/ .* \. [md | MD | Rmd | org | pod6] $ /) {
+        if $fileName.match(/ :i .* \. [md | Rmd | org | pod6] $ /) {
             $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ $autoSuffix ~ '.' ~ $<ext> });
         } else {
             $fileNameNew = $fileName ~ $autoSuffix;
@@ -332,11 +332,11 @@ sub FileCodeChunksProcessing(Str $fileName,
         die 'The argument $outputFileName is expected to be string or Whatever.';
     }
 
-    if $fileName.match(/ .* \. [md | MD | Rmd] $ /) { $fileType = 'markdown' }
-    elsif $fileName.match(/ .* \. org $ /) { $fileType = 'org-mode' }
-    elsif $fileName.match(/ .* \. pod6 $ /) { $fileType = 'pod6' }
+    if $fileName.match(/ :i .* \. [md | Rmd] $ /) { $fileType = 'markdown' }
+    elsif $fileName.match(/ :i .* \. org $ /) { $fileType = 'org-mode' }
+    elsif $fileName.match(/ :i .* \. pod6 $ /) { $fileType = 'pod6' }
     else {
-        die "Unknown file type (extension). The file type (extension) is expectecd to be one of {<md MD Rmd org pod6>}.";
+        die "Unknown file type (extension). The file type (extension) is expectecd to be one of {<md Rmd org pod6>}.";
     }
 
     if $noteOutputFileName {
