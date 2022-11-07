@@ -15,6 +15,8 @@ code chunks in documents of different types (like
 [Org Mode](https://orgmode.org), 
 [Pod6](https://docs.raku.org/language/pod).)
 
+There is also a script for extracting code chunks.
+
 ------
 
 ## Installation
@@ -22,7 +24,7 @@ code chunks in documents of different types (like
 Package installations from both sources use [zef installer](https://github.com/ugexe/zef)
 (which should be bundled with the "standard" [Rakudo](https://rakudo.org) installation file.)
 
-To install the package from [Raku Modules / PAUSE](https://modules.raku.org)
+To install the package from [Zef ecosystem](https://raku.land)
 use the shell command:
 
 ```
@@ -67,12 +69,13 @@ When the prompt arguments are given the value `'AUTO'` then the actual prompt va
 
 - Pod6 : `evalOutputPrompt = '# '`, `evalErrorPrompt = '#ERROR: '`
 
-### Scripts
+-------
 
-The [directory "./examples"](./examples) has a script files, 
+## Command Line Interface 
+
+The package provides Command Line Interface (CLI) scripts, 
 [`file-code-chunks-eval`](bin/file-code-chunks-eval) and
-[`file-code-chunks-extract`](bin/file-code-chunks-extract),
-that can be used from the command line. 
+[`file-code-chunks-extract`](bin/file-code-chunks-extract).
 
 Here are script invocation examples for the code chunks evaluation in a file named "doc.md":
 
@@ -95,6 +98,32 @@ If no output file name is specified then the script
 ([`file-code-chunks-extract`](bin/file-code-chunks-extract))
 makes a new file in the same directory with the string
 "_woven" ("_tangled") inserted into the input file name.
+
+
+### `file-code-chunks-eval`
+
+```shell
+> file-code-chunks-eval
+# Usage:
+#  file-code-chunks-eval <inputFileName> [-o|--output=<Str>] [--evalOutputPrompt=<Str>] [--evalErrorPrompt=<Str>] [--promptPerLine]
+#  
+#    <inputFileName>             Input file name.
+#    -o|--output=<Str>           Output file; if not given the output file name is the input file name concatenated with "_woven". [default: 'Whatever']
+#    --evalOutputPrompt=<Str>    Evaluation results prompt. [default: 'AUTO']
+#    --evalErrorPrompt=<Str>     Evaluation errors prompt. [default: 'AUTO']
+#    --promptPerLine             Should prompts be printed per line or not? [default: True]
+```
+
+### `file-code-chunks-extract`
+
+```shell
+> file-code-chunks-extract
+# Usage:
+#  file-code-chunks-extract <inputFileName> [-o|--output=<Str>] -- Extract content of code chunks in a Markdown, org-mode, or Pod6 file.
+#  
+#    <inputFileName>      Input file name.
+#    -o|--output=<Str>    Output file; if not given the output file name is the input file name concatenated with "_tangled". [default: 'Whatever']
+```
 
 ------
 
