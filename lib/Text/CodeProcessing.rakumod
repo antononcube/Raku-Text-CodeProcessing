@@ -74,7 +74,7 @@ my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
 #| Markdown code chunk search regex
 my regex MarkdownSearch {
     $<header>=(
-    $mdTicks '{'? \h* $<lang>=('perl6' | 'raku' | 'raku-dsl')
+    $mdTicks '{'? \h* $<lang>=('perl6' | 'raku' | 'raku-dsl' | 'shell')
     [ \h+ $<name>=(<alpha>+) ]?
     [ \h* ',' \h* $<params>=(<md-list-of-params>) ]? \h* '}'? \h* \v )
     $<code>=[<!before $mdTicks> .]*
@@ -105,7 +105,7 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
 ## Org-mode functions
 ##===========================================================
 
-#| Org-mode code block openning
+#| Org-mode code block opening
 constant $orgBeginSrc = '#+BEGIN_SRC';
 
 #| Org-mode code block closing
@@ -119,7 +119,7 @@ my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
 
 #| Org-mode code chunk search regex
 my regex OrgModeSearch {
-    $<header>=( $orgBeginSrc \h* $<lang>=('perl6' | 'raku' | 'raku-dsl')
+    $<header>=( $orgBeginSrc \h* $<lang>=('perl6' | 'raku' | 'raku-dsl' | 'shell')
     [ \h+ $<params>=(<org-list-of-params>) ]? \h* \v )
     $<code>=[<!before $orgEndSrc> .]*
     $orgEndSrc
@@ -154,7 +154,7 @@ constant $podEndSrc = '=end code';
 
 #| Pod6 code chunk search regex
 my regex Pod6Search {
-    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' ] '>' ]? \v )
+    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' | 'shell' ] '>' ]? \v )
     $<code>=[<!before $podEndSrc> .]*
     $podEndSrc
 }
@@ -213,7 +213,11 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
     state $dslCodeCallInit = 0;
 
     # If DSL evaluation is specified change the code accordingly
-    my $code-to-eval = $lang eq 'raku-dsl' ?? 'ToDSLCode("' ~ $code.Str.subst('"', '\"', :g) ~ '", format => "' ~ $format ~ '")' !! $code.Str ;
+    my $code-to-eval = do given $lang {
+        when $_ eq 'raku-dsl' { 'ToDSLCode("' ~ $code.Str.subst('"', '\"', :g) ~ '", format => "' ~ $format ~ '")' };
+        when $_ eq 'shell' { 'my $proc = Proc.new(:out);  $proc.shell(\'' ~ $code.Str ~ '\'); my $captured-output = $proc.out.slurp: :close; $captured-output;' };
+        default { $code.Str }
+    }
 
     if $lang eq 'raku-dsl' and not $dslCodeCallInit {
 
