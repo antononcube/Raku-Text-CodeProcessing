@@ -1,70 +1,116 @@
+=begin pod
+=begin head1
+Introduction
+=end head1
 
-=para
+=begin para
 This book discusses the use of the programming language Raku for computational workflows for prediction.
+=end para
 
-=para
+=begin para
 Workflows that belong to:
+=end para
 =item1 Machine Learning
 =item1 Scientific computing
 
-=head3 Numeric word forms parsing
-
-=para
+=begin para
 Here we load a few packages:
+=end para
 
-=begin code
+=begin code :lang<perl6>
 use Lingua::NumericWordForms;
 use Chemistry::Stoichiometry;
 =end code
 
-=para
-Consider examples of converting numeric word forms using the Raku package
-L<Lingua::NumericWordForms|https://github.com/antononcube/Raku-Lingua-NumericWordForms>:
 
-=begin code
+=begin para
+Consider examples of converting numeric word forms using the Raku package
+L<Lingua::NumericWordForms|https://github.com/antononcube/Raku-Lingua-NumericWordForms> :
+=end para
+
+
+=begin code :lang<perl6>
 say from-numeric-word-form('one thousand and twenty three')
 =end code
 
-=para
-Here is another conversion from Bulgarian:
 
-=begin code
+=begin para
+Here is another conversion from Bulgarian:
+=end para
+
+=begin code :lang<perl6>
 say from-numeric-word-form('две хиляди двеста и тринадесет')
 =end code
 
-=para
-Here is another conversion from Greek:
 
-=begin code
+=begin para
+Here is another conversion from Greek:
+=end para
+
+=begin code :lang<perl6>
 say from-numeric-word-form('τετρακόσια είκοσι επτά')
 =end code
 
-=para
+
+=para 
+----------------------------------------------------------------------------------------------------
+
+=begin para
 Here we convert a chemical element symbols to corresponding Russian names:
+=end para
 
-=head3 Chemical elements data
-
-=begin code
+=begin code :lang<perl6>
 chemical-element(["O", "Cl", "S"], "Russian")
 =end code
 
-=head3 Variables
 
-=para
+
+=begin para
+-----
+=end para
+
+=begin head2
+Sequence of cells of operations
+=end head2
+
+=begin para
 Consider the variable:
+=end para
 
-=begin code
+=begin code :lang<perl6>
 my $answer = 42;
 $answer;
 =end code
 
-=para
-Here is a square of it:
 
-=begin code
+=begin para
+Here is a square of it:
+=end para
+
+=begin code :lang<perl6>
 $answer * $answer;
 =end code
 
-=begin code
+
+=begin code :lang<perl6>
 ($answer ~ " ") x 5
 =end code
+
+
+=begin para
+-----
+=end para
+
+=begin head2
+The umbrella DSL functionality
+=end head2
+
+=begin para
+We use the CLI script C<dsl-translation> to invoke:
+=end para
+
+=begin code :lang<shell>
+dsl-translation --help
+=end code
+
+=end pod

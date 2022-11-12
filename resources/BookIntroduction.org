@@ -1,33 +1,48 @@
-#+TITLE: Introduction 
-
-This book discusses the use of the programming language Raku for computational workflows for prediction. 
-
-Workflows that belong to:
-  - Machine Learning
-  - Scientific computing
-
-
-Here we load a few packages:
-
-#+BEGIN_SRC raku :results output :exports both :session
+#+TITLE: Introduction
+- This book discusses the use of the programming language Raku for computational workflows for prediction.
+- Workflows that belong to:
+- Machine Learning
+- Scientific computing
+- Here we load a few packages:
+#+BEGIN_SRC perl6 :results output :exports both :session
 use Lingua::NumericWordForms;
 use Chemistry::Stoichiometry;
 #+END_SRC
-
-Consider examples of converting numeric word forms using the Raku package
-[[https://github.com/antononcube/Raku-Lingua-NumericWordForms][Lingua::NumericWordForms]]:
-
-#+BEGIN_SRC raku :results output :exports both :session
-from-numeric-word-form('one thousand and twenty three')
+- Consider examples of converting numeric word forms using the Raku package
+[[https://github.com/antononcube/Raku-Lingua-NumericWordForms][Lingua::NumericWordForms]] :
+#+BEGIN_SRC perl6 :results output :exports both :session
+say from-numeric-word-form('one thousand and twenty three')
 #+END_SRC
-
-#+BEGIN_SRC raku :results output :exports both :session
-from-numeric-word-form('хиляда и двадесет и три')
+- Here is another conversion from Bulgarian:
+#+BEGIN_SRC perl6 :results output :exports both :session
+say from-numeric-word-form('две хиляди двеста и тринадесет')
 #+END_SRC
-
-Here we convert a chemical element symbols to corresponding Russian
-names:
-
-#+BEGIN_SRC raku :results output :exports both :session
+- Here is another conversion from Greek:
+#+BEGIN_SRC perl6 :results output :exports both :session
+say from-numeric-word-form('τετρακόσια είκοσι επτά')
+#+END_SRC
+----------------------------------------------------------------------------------------------------
+- Here we convert a chemical element symbols to corresponding Russian names:
+#+BEGIN_SRC perl6 :results output :exports both :session
 chemical-element(["O", "Cl", "S"], "Russian")
+#+END_SRC
+- -----
+* Sequence of cells of operations
+- Consider the variable:
+#+BEGIN_SRC perl6 :results output :exports both :session
+my $answer = 42;
+$answer;
+#+END_SRC
+- Here is a square of it:
+#+BEGIN_SRC perl6 :results output :exports both :session
+$answer * $answer;
+#+END_SRC
+#+BEGIN_SRC perl6 :results output :exports both :session
+($answer ~ " ") x 5
+#+END_SRC
+- -----
+* The umbrella DSL functionality
+- We use the CLI script ~dsl-translation~ to invoke:
+#+BEGIN_SRC shell :results output :exports both :session
+dsl-translation --help
 #+END_SRC
