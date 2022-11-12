@@ -1,7 +1,7 @@
 {
   "name": "Text::CodeProcessing",
   "description": "A package with functions for processing of code chunks in documents of different types (like Markdown, Org-mode, Pod6.)",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "perl": "6.d",
   "authors": [
     "Anton Antonov"
@@ -14,7 +14,11 @@
     "Text::CodeProcessing": "lib/Text/CodeProcessing.rakumod",
     "Text::CodeProcessing::REPLSandbox": "lib/Text/CodeProcessing/REPLSandbox.rakumod"
   },
-  "resources": [],
+  "resources": [
+    "BookIntroduction.md",
+    "BookIntroduction.org",
+    "BookIntroduction.pod6"
+  ],
   "license": "Artistic-2.0",
   "tags": [
     "parser",
