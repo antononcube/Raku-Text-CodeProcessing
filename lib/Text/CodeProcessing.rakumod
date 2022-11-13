@@ -215,7 +215,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
     # If DSL evaluation is specified change the code accordingly
     my $code-to-eval = do given $lang {
         when $_ eq 'raku-dsl' { 'ToDSLCode("' ~ $code.Str.subst('"', '\"', :g) ~ '", format => "' ~ $format ~ '")' };
-        when $_ eq 'shell' { 'my $proc = Proc.new(:out);  $proc.shell(\'' ~ $code.Str ~ '\'); my $captured-output = $proc.out.slurp: :close; $captured-output;' };
+        when $_ eq 'shell' { 'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out);  $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;' };
         default { $code.Str }
     }
 
