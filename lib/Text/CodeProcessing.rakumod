@@ -13,7 +13,7 @@ use Text::CodeProcessing::REPLSandbox;
 sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) {
 
     my $name = $<name> ?? $<name>.Str !! '';
-    my $lang = $<lang> ?? $<name>.Str !! '';
+    my $lang = $<lang> ?? $<lang>.Str !! '';
     my $outputLang = '';
     my $evaluate = 'TRUE';
     my $format = 'JSON';
@@ -184,8 +184,8 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
             CodeChunkParametersExtraction( 'pod-list-of-params', $<header>,
                     %( lang => 'raku',
                        evaluate => 'TRUE',
-                       outputPrompt => $evalOutputPrompt.lc ∈ <auto whatever> ?? ': ' !! $evalOutputPrompt,
-                       errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? ':ERROR: ' !! $evalErrorPrompt,
+                       outputPrompt => $evalOutputPrompt.lc ∈ <auto whatever> ?? '# ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? '#ERROR: ' !! $evalErrorPrompt,
                        format => 'JSON' ) );
 
     my $outputLang = %params<outputLang> // '';
