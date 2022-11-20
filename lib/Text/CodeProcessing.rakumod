@@ -89,8 +89,8 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
             CodeChunkParametersExtraction( 'md-list-of-params', $<header>,
                     %( lang => 'raku',
                        evaluate => 'TRUE',
-                       outputPrompt => $evalOutputPrompt eq 'AUTO' ?? '# ' !! $evalOutputPrompt,
-                       errorPrompt => $evalErrorPrompt eq 'AUTO' ?? '#ERROR: ' !! $evalErrorPrompt,
+                       outputPrompt => $evalOutputPrompt.lc ∈ <auto whatever> ?? '# ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? '#ERROR: ' !! $evalErrorPrompt,
                        format => 'JSON' ) );
 
     # Construct the replacement string
@@ -133,8 +133,8 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
             CodeChunkParametersExtraction( 'org-list-of-params', $<header>,
                     %( lang => 'raku',
                        evaluate => 'TRUE',
-                       outputPrompt => $evalOutputPrompt eq 'AUTO' ?? ': ' !! $evalOutputPrompt,
-                       errorPrompt => $evalErrorPrompt eq 'AUTO' ?? ':ERROR: ' !! $evalErrorPrompt,
+                       outputPrompt => $evalOutputPrompt.lc ∈ <auto whatever> ?? ': ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? ':ERROR: ' !! $evalErrorPrompt,
                        format => 'JSON' ) );
 
     # Construct the replacement string
@@ -162,8 +162,8 @@ my regex Pod6Search {
 #| Pod6 replace sub
 sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
 
-    my $outputPrompt = $evalOutputPrompt eq 'AUTO' ?? '# ' !! $evalOutputPrompt;
-    my $errorPrompt = $evalErrorPrompt eq 'AUTO' ?? '#ERROR: ' !! $evalErrorPrompt;
+    my $outputPrompt = $evalOutputPrompt.lc ∈ <auto whatever> ?? '# ' !! $evalOutputPrompt;
+    my $errorPrompt = $evalErrorPrompt.lc ∈ <auto whatever> ?? '#ERROR: ' !! $evalErrorPrompt;
 
     $<header> ~ $<code> ~ $podEndSrc ~
             "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $outputPrompt, $errorPrompt, :$promptPerLine) ~ "=end output";
@@ -270,12 +270,20 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
 #| Evaluates code chunks in a string.
 sub StringCodeChunksEvaluation(Str:D $input,
                                Str:D $docType,
-                               Str:D :$evalOutputPrompt = 'AUTO',
-                               Str:D :$evalErrorPrompt = 'AUTO',
+                               :$evalOutputPrompt is copy = Whatever,
+                               :$evalErrorPrompt is copy = Whatever,
                                Bool :$promptPerLine = True) is export {
 
-    die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys}"
+    die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys.join(', ')}."
     unless $docType (elem) %fileTypeToReplaceSub.keys;
+
+    if $evalOutputPrompt.isa(Whatever) { $evalOutputPrompt = 'Whatever' }
+    die "The argument evalOutputPrompt is expected to be a string or Whatever."
+    unless $evalOutputPrompt ~~ Str;
+
+    if $evalErrorPrompt.isa(Whatever) { $evalErrorPrompt = 'Whatever' }
+    die "The argument evalErrorPrompt is expected to be a string or Whatever."
+    unless $evalErrorPrompt ~~ Str;
 
     ## Create a sandbox
     my $sandbox = Text::CodeProcessing::REPLSandbox.new();
@@ -311,8 +319,8 @@ sub StringCodeChunksExtraction(Str:D $input,
 #| Evaluates code chunks in a file.
 sub FileCodeChunksProcessing(Str $fileName,
                              :$outputFileName = Whatever,
-                             Str :$evalOutputPrompt = 'AUTO',
-                             Str :$evalErrorPrompt = 'AUTO',
+                             :$evalOutputPrompt is copy = Whatever,
+                             :$evalErrorPrompt is copy = Whatever,
                              Bool :$noteOutputFileName = False,
                              Bool :$promptPerLine = True,
                              Bool :$tangle = False) {
@@ -346,6 +354,16 @@ sub FileCodeChunksProcessing(Str $fileName,
     if $noteOutputFileName {
         note "Output file is $fileNameNew" unless $outputFileName;
     }
+
+    ## Process output prompt
+    if $evalOutputPrompt.isa(Whatever) { $evalOutputPrompt = 'Whatever' }
+    die "The argument evalOutputPrompt is expected to be a string or Whatever."
+    unless $evalOutputPrompt ~~ Str;
+
+    ## Process error prompt
+    if $evalErrorPrompt.isa(Whatever) { $evalErrorPrompt = 'Whatever' }
+    die "The argument evalErrorPrompt is expected to be a string or Whatever."
+    unless $evalErrorPrompt ~~ Str;
 
     ## Process code chunks (weave output) and spurt in a file
     if $tangle {
