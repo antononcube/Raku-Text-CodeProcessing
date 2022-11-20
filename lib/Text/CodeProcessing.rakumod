@@ -13,7 +13,8 @@ use Text::CodeProcessing::REPLSandbox;
 sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) {
 
     my $name = $<name> ?? $<name>.Str !! '';
-    my $lang = $<lang>.Str;
+    my $lang = $<lang> ?? $<name>.Str !! '';
+    my $outputLang = '';
     my $evaluate = 'TRUE';
     my $format = 'JSON';
     my $outputPrompt = %defaults<outputPrompt> // "# OUTPUT: ";
@@ -31,13 +32,17 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
                 $format = $pair<value>.Str
 
+            } elsif $pair<param>.Str eq 'outputLang' {
+
+                $outputLang = $pair<value>.Str
+
             } elsif $pair<param>.Str eq 'outputPrompt' {
 
                 $outputPrompt = $pair<value>.Str;
 
                 $outputPrompt =
                         do if $outputPrompt eq 'NONE' { '' }
-                        elsif $outputPrompt (elem) <AUTO AUTOMATIC GLOBAL> { $outputPrompt }
+                        elsif $outputPrompt (elem) <AUTO AUTOMATIC GLOBAL Whatever> { $outputPrompt }
                         elsif $outputPrompt eq 'DEFAULT' { '# ' }
                         else { $outputPrompt }
 
@@ -47,14 +52,14 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
                 $errorPrompt =
                         do if $errorPrompt eq 'NONE' { '' }
-                        elsif $errorPrompt (elem) <AUTO AUTOMATIC GLOBAL> { $errorPrompt }
+                        elsif $errorPrompt (elem) <AUTO AUTOMATIC GLOBAL Whatever> { $errorPrompt }
                         elsif $errorPrompt eq 'DEFAULT' { '# ERR: ' }
                         else { $errorPrompt }
             }
         }
     }
 
-    Hash( %defaults , %( :$evaluate, :$name, :$lang, :$format, :$outputPrompt, :$errorPrompt ) )
+    Hash( %defaults , %( :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt ) )
 }
 
 
@@ -93,10 +98,12 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
                        errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? '#ERROR: ' !! $evalErrorPrompt,
                        format => 'JSON' ) );
 
+    my $outputLang = %params<outputLang> // '';
+
     # Construct the replacement string
     $<header> ~ $<code> ~ $mdTicks ~
             ( %params<evaluate>.lc (elem) <true t yes>
-                    ?? "\n" ~ $mdTicks ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine) ~ $mdTicks
+                    ?? "\n" ~ $mdTicks ~ $outputLang ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine) ~ $mdTicks
                     !! '');
 }
 
@@ -111,10 +118,10 @@ constant $orgBeginSrc = '#+BEGIN_SRC';
 #| Org-mode code block closing
 constant $orgEndSrc = '#+END_SRC';
 
-#| Markdown pair assignment
+#| Org-mode pair assignment
 my regex org-assign-pair { ':' $<param>=(<.alpha>+) \h+ $<value>=(\S*) | ':' $<param>=(<.alpha>+) }
 
-#| Markdown list of assignments
+#| Org-mode list of assignments
 my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
 
 #| Org-mode code chunk search regex
@@ -149,12 +156,22 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
 ## Pod6 functions
 ##===========================================================
 
+#| Pod6 code block opening
 constant $podBeginSrc = '=begin code';
+
+#| Pod6 code block opening
 constant $podEndSrc = '=end code';
+
+#| Pod6 pair assignment
+my regex pod-assign-pair { ':' $<param>=(<.alpha>+) '<' $<value>=(\S*) '>' | ':' $<param>=(<.alpha>+) }
+
+#| Pod6 list of assignments
+my regex pod-list-of-params { <pod-assign-pair>+ % [ \h+ ] }
 
 #| Pod6 code chunk search regex
 my regex Pod6Search {
-    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' | 'shell' ] '>' ]? \v )
+    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' | 'shell' ] '>' ]?
+    [ \h+ $<params>=(<pod-list-of-params>) ]? \h* \v )
     $<code>=[<!before $podEndSrc> .]*
     $podEndSrc
 }
@@ -162,11 +179,23 @@ my regex Pod6Search {
 #| Pod6 replace sub
 sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPrompt = '#ERROR: ', Bool :$promptPerLine = True) {
 
-    my $outputPrompt = $evalOutputPrompt.lc ∈ <auto whatever> ?? '# ' !! $evalOutputPrompt;
-    my $errorPrompt = $evalErrorPrompt.lc ∈ <auto whatever> ?? '#ERROR: ' !! $evalErrorPrompt;
+    # Determine the code chunk parameters
+    my %params =
+            CodeChunkParametersExtraction( 'pod-list-of-params', $<header>,
+                    %( lang => 'raku',
+                       evaluate => 'TRUE',
+                       outputPrompt => $evalOutputPrompt.lc ∈ <auto whatever> ?? ': ' !! $evalOutputPrompt,
+                       errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? ':ERROR: ' !! $evalErrorPrompt,
+                       format => 'JSON' ) );
+
+    my $outputLang = %params<outputLang> // '';
+    if $outputLang { $outputLang = ' :lang<' ~ $outputLang ~ '>'; }
 
     $<header> ~ $<code> ~ $podEndSrc ~
-            "\n" ~ "=begin output" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, $outputPrompt, $errorPrompt, :$promptPerLine) ~ "=end output";
+            "\n" ~
+            "=begin output" ~ $outputLang ~ "\n" ~
+            CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine) ~
+            "=end output";
 }
 
 
