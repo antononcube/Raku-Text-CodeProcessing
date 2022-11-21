@@ -30,13 +30,14 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
             } elsif $pair<param>.Str eq 'format' {
 
-                $format = $pair<value>.Str
+                $format = $pair<value>.Str;
 
-            } elsif $pair<param>.Str eq 'outputLang' {
+            } elsif $pair<param>.Str eq 'outputLang' || $pair<param>.Str ~~ / output.lang / {
 
-                $outputLang = $pair<value>.Str
+                $outputLang = $pair<value>.Str;
+                if $outputLang eq 'NONE' || ! $outputLang.trim {  $outputLang = ''; }
 
-            } elsif $pair<param>.Str eq 'outputPrompt' {
+            } elsif $pair<param>.Str eq 'outputPrompt' || $pair<param>.Str ~~ / output.prompt / {
 
                 $outputPrompt = $pair<value>.Str;
 
@@ -46,7 +47,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
                         elsif $outputPrompt eq 'DEFAULT' { '# ' }
                         else { $outputPrompt }
 
-            } elsif $pair<param>.Str eq 'errorPrompt' {
+            } elsif $pair<param>.Str eq 'errorPrompt' || $pair<param>.Str ~~ / error.prompt / {
 
                 $errorPrompt = $pair<value>.Str;
 
@@ -71,7 +72,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 constant $mdTicks = '```';
 
 #| Markdown pair assignment
-my regex md-assign-pair { $<param>=(<.alpha>+) \h* '=' \h* $<value>=(<-[ \{ \} \s ]>*) }
+my regex md-assign-pair { $<param>=([<.alpha> | '.' | '_' | '-']+) \h* '=' \h* $<value>=(<-[ \{ \} \s ]>*) }
 
 #| Markdown list of assignments
 my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
@@ -119,7 +120,7 @@ constant $orgBeginSrc = '#+BEGIN_SRC';
 constant $orgEndSrc = '#+END_SRC';
 
 #| Org-mode pair assignment
-my regex org-assign-pair { ':' $<param>=(<.alpha>+) \h+ $<value>=(\S*) | ':' $<param>=(<.alpha>+) }
+my regex org-assign-pair { ':' $<param>=([<.alpha> | '.' | '_' | '-']+) \h+ $<value>=(\S*) | ':' $<param>=(<.alpha>+) }
 
 #| Org-mode list of assignments
 my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
@@ -163,7 +164,7 @@ constant $podBeginSrc = '=begin code';
 constant $podEndSrc = '=end code';
 
 #| Pod6 pair assignment
-my regex pod-assign-pair { ':' $<param>=(<.alpha>+) '<' $<value>=(\S*) '>' | ':' $<param>=(<.alpha>+) }
+my regex pod-assign-pair { ':' $<param>=([<.alpha> | '.' | '_' | '-']+) '<' $<value>=(\S*) '>' | ':' $<param>=(<.alpha>+) }
 
 #| Pod6 list of assignments
 my regex pod-list-of-params { <pod-assign-pair>+ % [ \h+ ] }
@@ -364,8 +365,8 @@ sub FileCodeChunksProcessing(Str $fileName,
     } elsif $outputFileName.isa(Whatever) {
         ## If the input file name has extension that is one of <md MD Rmd org pod6>
         ## then insert "_weaved" before the extension.
-        if $fileName.match(/ :i .* \. [md | Rmd | org | pod6] $ /) {
-            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | org | pod6) $ /, -> $/ { $<name> ~ $autoSuffix ~ '.' ~ $<ext> });
+        if $fileName.match(/ :i .* \. [md | Rmd | qmd | org | pod6] $ /) {
+            $fileNameNew = $fileName.subst(/ $<name> = (.*) '.' $<ext> = (md | MD | Rmd | qmd | org | pod6) $ /, -> $/ { $<name> ~ $autoSuffix ~ '.' ~ $<ext> });
         } else {
             $fileNameNew = $fileName ~ $autoSuffix;
         }
@@ -373,11 +374,11 @@ sub FileCodeChunksProcessing(Str $fileName,
         die 'The argument $outputFileName is expected to be string or Whatever.';
     }
 
-    if $fileName.match(/ :i .* \. [md | Rmd] $ /) { $fileType = 'markdown' }
+    if $fileName.match(/ :i .* \. [md | Rmd | qmd] $ /) { $fileType = 'markdown' }
     elsif $fileName.match(/ :i .* \. org $ /) { $fileType = 'org-mode' }
     elsif $fileName.match(/ :i .* \. pod6 $ /) { $fileType = 'pod6' }
     else {
-        die "Unknown file type (extension). The file type (extension) is expectecd to be one of {<md Rmd org pod6>}.";
+        die "Unknown file type (extension). The file type (extension) is expectecd to be one of {<md Rmd qmd org pod6>}.";
     }
 
     if $noteOutputFileName {
@@ -410,8 +411,8 @@ sub FileCodeChunksProcessing(Str $fileName,
 #| Evaluates code chunks in a file.
 sub FileCodeChunksEvaluation(Str $fileName,
                              :$outputFileName = Whatever,
-                             Str :$evalOutputPrompt = 'AUTO',
-                             Str :$evalErrorPrompt = 'AUTO',
+                             :$evalOutputPrompt = 'AUTO',
+                             :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = True,
                              Bool :$promptPerLine = True) is export {
 
