@@ -105,28 +105,11 @@ makes a new file in the same directory with the string
 ```shell
 file-code-chunks-eval --help
 ```
-```
-# Usage:
-#   file-code-chunks-eval <inputFileName> [-o|--output=<Str>] [--eval-output-prompt|--evalOutputPrompt=<Str>] [--eval-error-prompt|--evalErrorPrompt=<Str>] [--prompt-per-line|--promptPerLine] -- Evaluates code chunks in a file. (Markdown, Org-mode, or Pod6.)
-#   
-#     <inputFileName>                                  Input file name.
-#     -o|--output=<Str>                                Output file; if not given the output file name is the input file name concatenated with "_woven". [default: 'Whatever']
-#     --eval-output-prompt|--evalOutputPrompt=<Str>    Evaluation results prompt. [default: 'Whatever']
-#     --eval-error-prompt|--evalErrorPrompt=<Str>      Evaluation errors prompt. [default: 'Whatever']
-#     --prompt-per-line|--promptPerLine                Should prompts be printed per line or not? [default: True]
-```
 
 ### `file-code-chunks-extract`
 
 ```shell
 file-code-chunks-extract --help
-```
-```
-# Usage:
-#   file-code-chunks-extract <inputFileName> [-o|--output=<Str>] -- Extract content of code chunks in a Markdown, org-mode, or Pod6 file.
-#   
-#     <inputFileName>      Input file name.
-#     -o|--output=<Str>    Output file; if not given the output file name is the input file name concatenated with "_tangled". [default: 'Whatever']
 ```
 
 ### `cronify`
@@ -137,15 +120,6 @@ It heavily borrows ideas and code from the chapter "Silent Cron, a Cron Wrapper"
 
 ```shell
 cronify --help
-```
-```
-# Usage:
-#   cronify [-i|--time-interval[=Int]] [-t|--total-time[=Int]] [--verbose] [<cmd> ...] -- Periodically execute given command (and arguments.)
-#   
-#     [<cmd> ...]                 Command and arguments to be executed periodically.
-#     -i|--time-interval[=Int]    Time interval between execution starts. [default: 10]
-#     -t|--total-time[=Int]       Total time for the repeated executions loop. [default: 1800]
-#     --verbose                   Should execution traces be proclaimed or not? [default: False]
 ```
 
 ------
