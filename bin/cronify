@@ -1,6 +1,12 @@
 #!/usr/bin/env raku
 use v6.d;
 
+# This script that facilitates periodic execution of a shell command (with parameters.)
+# It heavily borrows ideas and code from the chapter "Silent Cron, a Cron Wrapper" of the book,
+# "Raku Fundamentals" by Moritz Lenz, [ML1].
+#
+# [ML1] Moritz Lenz, "Raku Fundamentals: A Primer with Examples, Projects, and Case Studies". 2nd ed. (2020), Apress.
+
 #| Periodically execute given command (and arguments.)
 sub MAIN(*@cmd,                         #= Command and arguments to be executed periodically.
          Int :i(:$time-interval) = 10,  #= Time interval between execution starts.
