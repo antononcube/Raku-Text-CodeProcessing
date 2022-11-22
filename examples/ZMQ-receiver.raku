@@ -27,7 +27,7 @@ While[True,
 =end code
 
 =begin para
-Alternatively, launch C<woflramscirpt> with the code above given as code argument.
+Alternatively, launch C<woflramscript> with the code above given as code argument.
 =end para
 
 use v6;
