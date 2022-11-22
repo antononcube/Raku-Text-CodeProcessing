@@ -21,16 +21,17 @@
   ],
   "license": "Artistic-2.0",
   "tags": [
-    "parser",
+    "CLI",
+    "code processing",
     "evaluation",
     "extraction",
-    "code processing",
     "literate programming",
     "markdown",
     "org-mode",
+    "parser",
     "pod6",
-    "weaving",
-    "tangling"
+    "tangling",
+    "weaving"
   ],
   "api": "1",
   "source-url": "https://github.com/antononcube/Raku-Text-CodeProcessing"
