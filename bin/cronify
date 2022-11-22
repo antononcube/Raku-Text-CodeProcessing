@@ -11,7 +11,7 @@ use v6.d;
 sub MAIN(*@cmd,                         #= Command and arguments to be executed periodically.
          Int :i(:$time-interval) = 10,  #= Time interval between execution starts.
          Int :t(:$total-time) = 1800,   #= Total time for the repeated executions loop.
-         Bool :$verbose = False         #= Should execution traces be proclaimed or not.
+         Bool :$verbose = False         #= Should execution traces be proclaimed or not?
          ) {
 
     if @cmd.elems > 0 && $time-interval > 0 && $time-interval > 0 {
