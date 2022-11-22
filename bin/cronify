@@ -1,0 +1,61 @@
+#!/usr/bin/env raku
+use v6.d;
+
+#| Periodically execute given command (and arguments.)
+sub MAIN(*@cmd,                         #= Command and arguments to be executed periodically.
+         Int :i(:$time-interval) = 10,  #= Time interval between execution starts.
+         Int :t(:$total-time) = 1800,   #= Total time for the repeated executions loop.
+         Bool :$verbose = False         #= Should execution traces be proclaimed or not.
+         ) {
+
+    if @cmd.elems > 0 && $time-interval > 0 && $time-interval > 0 {
+        my UInt $k = 0;
+
+        # Loop
+        my $startTime = now;
+        while now - $startTime < $total-time {
+            $k++;
+
+            if $verbose {
+                say '=' x 60;
+                say "START step $k : { DateTime.new(now).hh-mm-ss }.";
+                say '-' x 60;
+            }
+
+            # Setup run
+            my $proc = Proc::Async.new(|@cmd);
+            my $collector = Channel.new;
+            for $proc.stdout, $proc.stderr -> $supply {
+                $supply.tap: { $collector.send($_) }
+            }
+
+            # Start
+            my $promise = $proc.start;
+            my $waitfor = $promise;
+
+            # Wait
+            $waitfor = Promise.allof(Promise.in($time-interval), $promise)
+            if $time-interval > 0;
+            await $waitfor;
+
+            my $result = $promise.result;
+            my $exitcode = $result.exitcode;
+
+            $collector.close;
+            my $output = $collector.list.join;
+
+            if $exitcode != 0 {
+                say "Program @cmd[] exited with code $exitcode";
+                print "Output:\n", $output if $output;
+                exit $exitcode
+            }
+            if $verbose {
+                print "Output:\n", $output if $output;
+                say '-' x 60;
+                say "END step $k   : {DateTime.new(now).hh-mm-ss}.";
+            }
+        }
+    } else {
+        warn "Nothing to do!";
+    }
+}
