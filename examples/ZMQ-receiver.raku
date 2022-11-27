@@ -106,6 +106,7 @@ sub MAIN(Str :$url = 'tcp://127.0.0.1', Str :$port = '5555') {
     }
     ]
 
+    $reciever.close;
     $proc.kill;
     $proc.kill: SIGKILL
 }

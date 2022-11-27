@@ -31,8 +31,9 @@ sub MAIN(Str :$url = 'tcp://*', Str :$port = '5555', Str :$rakuOutputPrompt = ''
 
     while (1) {
         my $message = $responder.receive();
-        say "Received : { $message.data-str }";
+        say "Received {DateTime.now} : { $message.data-str }";
         my $res = CodeChunkEvaluate($sandbox, $message.data-str, $rakuOutputPrompt, $rakuErrorPrompt);
+        $message.close;
         $responder.send($res);
     }
 }
