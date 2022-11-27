@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 9;
+plan 12;
 
 #============================================================
 # 1 markdown - Simple
@@ -270,5 +270,85 @@ like $resRun,
         $resCodeRegex,
         'my $answer = 42 *; $answer ** 2';
 
+
+#============================================================
+# 10 markdown - Other language chunk
+#============================================================
+
+my Str $code10 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku, outputLang=json
+say '{ "a" : 12 }';
+```
+INIT
+
+my Str $resCode10 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku, outputLang=json
+say '{ "a" : 12 }';
+```
+```json
+{ "a" : 12 }
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code10, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
+        $resCode10,
+        'JSON output chunk';
+
+
+#============================================================
+# 11 markdown - Other language chunk 2
+#============================================================
+
+my Str $code11 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku, outputLang={json}
+say '{ "a" : 12 }';
+```
+INIT
+
+my Str $resCode11 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```raku, outputLang={json}
+say '{ "a" : 12 }';
+```
+```{json}
+{ "a" : 12 }
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code11, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
+        $resCode11,
+        'JSON output chunk with {}';
+
+
+#============================================================
+# 12 markdown - Other language chunk 3
+#============================================================
+
+my Str $code12 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```{raku, outputLang={json}}
+say '{ "a" : 12 }';
+```
+INIT
+
+my Str $resCode12 = q:to/INIT/;
+Here we translate into Julia the data wrangling workflow:
+```{raku, outputLang={json}}
+say '{ "a" : 12 }';
+```
+```{json}
+{ "a" : 12 }
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code12, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
+        $resCode12,
+        'JSON output chunk with {{}}';
 
 done-testing;
