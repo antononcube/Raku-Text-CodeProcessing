@@ -72,7 +72,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 constant $mdTicks = '```';
 
 #| Markdown pair assignment
-my regex md-assign-pair { $<param>=([<.alpha> | '.' | '_' | '-']+) \h* '=' \h* $<value>=(<-[ \{ \} \s ]>*) }
+my regex md-assign-pair { $<param>=([<.alpha> | '.' | '_' | '-']+) \h* '=' \h* $<value>=(<-[{}\s]>* | '{' ~ '}' <-[{}]>* ) }
 
 #| Markdown list of assignments
 my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
