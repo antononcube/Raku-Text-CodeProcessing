@@ -14,6 +14,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
     my $name = $<name> ?? $<name>.Str !! '';
     my $lang = $<lang> ?? $<lang>.Str !! '';
+    my $outputResults = 'markup';
     my $outputLang = '';
     my $evaluate = 'TRUE';
     my $format = 'JSON';
@@ -56,11 +57,18 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
                         elsif $errorPrompt (elem) <AUTO AUTOMATIC GLOBAL Whatever> { $errorPrompt }
                         elsif $errorPrompt eq 'DEFAULT' { '# ERR: ' }
                         else { $errorPrompt }
+
+           } elsif $pair<param>.Str eq 'results' {
+
+                $outputResults = $pair<value>.Str;
+                if $outputResults (elem) <AUTO AUTOMATIC Whatever> || ! $outputResults.trim { $outputResults = 'markup'; }
+                if $outputResults eq 'asis' { $outputPrompt = ''; }
+
             }
         }
     }
 
-    Hash( %defaults , %( :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt ) )
+    Hash( %defaults , %( :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt, :$outputResults ) )
 }
 
 
@@ -102,10 +110,21 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
     my $outputLang = %params<outputLang> // '';
 
     # Construct the replacement string
-    $<header> ~ $<code> ~ $mdTicks ~
-            ( %params<evaluate>.lc (elem) <true t yes>
-                    ?? "\n" ~ $mdTicks ~ $outputLang ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine) ~ $mdTicks
-                    !! '');
+    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    return do given %params<outputResults> {
+        when 'asis' {
+            $<header> ~ $<code> ~ $mdTicks ~
+                    ($evalCode ?? "\n" ~ $res !! '');
+        }
+
+        default {
+            $<header> ~ $<code> ~ $mdTicks ~
+                    ($evalCode
+                        ?? "\n" ~ $mdTicks ~ $outputLang ~ "\n" ~ $res ~ $mdTicks
+                        !! '');
+        }
+    }
 }
 
 
