@@ -38,7 +38,7 @@ say from-numeric-word-form('one thousand and twenty three')
 Here is another conversion from Bulgarian:
 =end para
 
-=begin code :lang<perl6>
+=begin code :lang<perl6> :results<asis>
 say from-numeric-word-form('две хиляди двеста и тринадесет')
 =end code
 

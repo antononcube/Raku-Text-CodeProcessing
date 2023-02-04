@@ -28,7 +28,7 @@ say from-numeric-word-form('две хиляди двеста и тринадес
 
 Here is another conversion from Greek:
 
-```{perl6, eval=T}
+```perl6, results=asis
 say from-numeric-word-form('τετρακόσια είκοσι επτά')
 ```
 

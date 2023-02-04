@@ -34,7 +34,7 @@ my $answer = 42;
 $answer;
 #+END_SRC
 - Here is a square of it:
-#+BEGIN_SRC perl6 :results output :exports both :session
+#+BEGIN_SRC perl6 :results asis :exports both :session
 $answer * $answer;
 #+END_SRC
 #+BEGIN_SRC perl6 :results output :exports both :session
