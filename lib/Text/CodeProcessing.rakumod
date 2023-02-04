@@ -165,10 +165,19 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
                        format => 'JSON' ) );
 
     # Construct the replacement string
-    $<header> ~ $<code> ~ $orgEndSrc ~
-            ( %params<evaluate>.lc (elem) <true t yes>
-                    ?? "\n" ~ "#+RESULTS:" ~ "\n" ~ CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine)
-                    !! "\n" );
+    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    return do given %params<outputResults> {
+        when 'asis' {
+            $<header> ~ $<code> ~ $orgEndSrc ~
+                    ($evalCode ?? "\n" ~ $res !! '');
+        }
+
+        default {
+            $<header> ~ $<code> ~ $orgEndSrc ~
+                    ($evalCode ?? "\n" ~ "#+RESULTS:" ~ "\n" ~ $res !! "\n");
+        }
+    }
 }
 
 
@@ -211,11 +220,23 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
     my $outputLang = %params<outputLang> // '';
     if $outputLang { $outputLang = ' :lang<' ~ $outputLang ~ '>'; }
 
-    $<header> ~ $<code> ~ $podEndSrc ~
-            "\n" ~
-            "=begin output" ~ $outputLang ~ "\n" ~
-            CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine) ~
-            "=end output";
+    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    return do given %params<outputResults> {
+        when 'asis' {
+            $<header> ~ $<code> ~ $podEndSrc ~
+                    "\n" ~
+                    $res
+        }
+
+        default {
+            $<header> ~ $<code> ~ $podEndSrc ~
+                    "\n" ~
+                    "=begin output" ~ $outputLang ~ "\n" ~
+                    $res ~
+                    "=end output";
+        }
+    }
 }
 
 
