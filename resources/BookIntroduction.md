@@ -32,6 +32,12 @@ Here is another conversion from Greek:
 say from-numeric-word-form('τετρακόσια είκοσι επτά')
 ```
 
+Here are the languages supported by "Lingua::NumericWordFormat":
+
+```perl6, echo=FALSE, results=asis
+from-numeric-word-form('languages', :group).sort.join("\n");
+```
+
 -----
 
 Here we convert a chemical element symbols to corresponding Russian names:
