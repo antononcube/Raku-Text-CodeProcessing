@@ -2,7 +2,7 @@
 # The REPL sandbox code was taken from Jupyter::Kernel::Sandbox :
 # https://github.com/bduggan/p6-jupyter-kernel/blob/master/lib/Jupyter/Kernel/Sandbox.rakumod
 
-use v6;
+use v6.d;
 
 use nqp;
 
