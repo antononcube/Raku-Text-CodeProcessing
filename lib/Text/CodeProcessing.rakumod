@@ -14,6 +14,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
     my $name = $<name> ?? $<name>.Str !! '';
     my $lang = $<lang> ?? $<lang>.Str !! '';
+    my $echo = True;
     my $outputResults = 'markup';
     my $outputLang = '';
     my $evaluate = 'TRUE';
@@ -25,7 +26,11 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
     if $<params>{$list-of-params} {
         for $<params>{$list-of-params}.values -> $pair {
 
-            if $pair<param>.Str (elem) <eval evaluate> {
+            if $pair<param>.Str (elem) <echo> {
+
+                $echo = $pair<value>.Str.lc ∈ <false no f> ?? False !! True;
+
+            } elsif $pair<param>.Str (elem) <eval evaluate> {
 
                 $evaluate = $pair<value>.Str;
 
@@ -68,7 +73,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
         }
     }
 
-    Hash( %defaults , %( :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt, :$outputResults ) )
+    Hash( %defaults , %( :$echo, :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt, :$outputResults ) )
 }
 
 
@@ -112,14 +117,14 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
     # Construct the replacement string
     my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $mdTicks !! '';
     return do given %params<outputResults> {
         when 'asis' {
-            $<header> ~ $<code> ~ $mdTicks ~
-                    ($evalCode ?? "\n" ~ $res !! '');
+            $origChunk ~ ($evalCode ?? "\n" ~ $res !! '');
         }
 
         default {
-            $<header> ~ $<code> ~ $mdTicks ~
+            $origChunk ~
                     ($evalCode
                         ?? "\n" ~ $mdTicks ~ $outputLang ~ "\n" ~ $res ~ $mdTicks
                         !! '');
@@ -167,14 +172,15 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
     # Construct the replacement string
     my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $orgEndSrc !! '';
     return do given %params<outputResults> {
         when 'asis' {
-            $<header> ~ $<code> ~ $orgEndSrc ~
+            $origChunk ~
                     ($evalCode ?? "\n" ~ $res !! '');
         }
 
         default {
-            $<header> ~ $<code> ~ $orgEndSrc ~
+            $origChunk ~
                     ($evalCode ?? "\n" ~ "#+RESULTS:" ~ "\n" ~ $res !! "\n");
         }
     }
@@ -222,15 +228,16 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
 
     my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $podEndSrc !! '';
     return do given %params<outputResults> {
         when 'asis' {
-            $<header> ~ $<code> ~ $podEndSrc ~
+            $origChunk ~
                     "\n" ~
                     $res
         }
 
         default {
-            $<header> ~ $<code> ~ $podEndSrc ~
+            $origChunk ~
                     "\n" ~
                     "=begin output" ~ $outputLang ~ "\n" ~
                     $res ~
