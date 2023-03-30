@@ -30,7 +30,7 @@ While[True,
 Alternatively, launch C<woflramscript> with the code above given as code argument.
 =end para
 
-use v6;
+use v6.d;
 
 #| Makes WL's ZeroMQ infinite loop program.
 sub MakeWLCode( Str :$url = 'tcp://127.0.0.1', Str :$port = '5555', Str :$prepCode = '', Bool :$proclaim = False) {

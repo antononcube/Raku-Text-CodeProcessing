@@ -12,7 +12,7 @@ The code below is an adaptation of one of the introductory codes from the ZMQ gu
 See L<"ØMQ - The Guide", "Chapter 1, Basics"|https://zguide.zeromq.org/docs/chapter1/>.
 =end para
 
-use v6;
+use v6.d;
 
 use Net::ZMQ4;
 use Net::ZMQ4::Constants;
