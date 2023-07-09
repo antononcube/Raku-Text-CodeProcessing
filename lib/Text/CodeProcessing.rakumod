@@ -32,7 +32,6 @@ my %defaultChunkParams =
         :echo,
         errorPrompt => '#ERROR: ',
         evaluate => 'TRUE',
-        format => 'JSON',
         lang => '',
         name => '',
         outputLang => '',
@@ -56,6 +55,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
     my $format = 'JSON';
     my $outputPrompt = %defaults<outputPrompt> // "# OUTPUT: ";
     my $errorPrompt = %defaults<errorPrompt> // "# ERROR: ";
+    my %extra;
 
     # If a list of parameters is specified extract values
     if $<params>{$list-of-params} {
@@ -69,9 +69,9 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
 
                 $evaluate = $pair<value>.Str;
 
-            } elsif $pair<param>.Str eq 'format' {
-
-                $format = $pair<value>.Str;
+#            } elsif $pair<param>.Str eq 'format' {
+#
+#                $format = $pair<value>.Str;
 
             } elsif $pair<param>.Str eq 'outputLang' || $pair<param>.Str ~~ / output.lang / {
 
@@ -98,17 +98,19 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
                         elsif $errorPrompt eq 'DEFAULT' { '# ERR: ' }
                         else { $errorPrompt }
 
-           } elsif $pair<param>.Str eq 'results' {
+            } elsif $pair<param>.Str eq 'results' {
 
                 $outputResults = $pair<value>.Str;
                 if $outputResults (elem) <AUTO AUTOMATIC Whatever> || ! $outputResults.trim { $outputResults = 'markup'; }
                 if $outputResults eq 'asis' { $outputPrompt = ''; }
 
+            } else {
+                %extra{$pair<param>} = $pair<value>;
             }
         }
     }
 
-    Hash( %defaults , %( :$echo, :$evaluate, :$name, :$lang, :$outputLang, :$format, :$outputPrompt, :$errorPrompt, :$outputResults ) )
+    return Hash( %defaults , %( :$echo, :$evaluate, :$name, :$lang, :$outputLang, :$outputPrompt, :$errorPrompt, :$outputResults ), %extra);
 }
 
 
@@ -150,7 +152,11 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
     my $outputLang = %params<outputLang> // '';
 
     # Construct the replacement string
-    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
+            lang => %params<lang>,
+            :$promptPerLine,
+            |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $mdTicks !! '';
     return do given %params<outputResults> {
@@ -205,7 +211,12 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
                        format => 'JSON' ) );
 
     # Construct the replacement string
-    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my $res = CodeChunkEvaluate(
+            $sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
+            lang => %params<lang>,
+            :$promptPerLine,
+            |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $orgEndSrc !! '';
     return do given %params<outputResults> {
@@ -261,7 +272,12 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
     my $outputLang = %params<outputLang> // '';
     if $outputLang { $outputLang = ' :lang<' ~ $outputLang ~ '>'; }
 
-    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>, lang => %params<lang>, format => %params<format>, :$promptPerLine);
+    my $res = CodeChunkEvaluate(
+            $sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
+            lang => %params<lang>,
+            :$promptPerLine,
+            |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+
     my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $podEndSrc !! '';
     return do given %params<outputResults> {
@@ -319,12 +335,20 @@ sub add-prompt( Str:D $prompt, Str:D $text, Bool :$promptPerLine = True) {
 sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
                        Str :$lang = 'raku',
                        Bool :$promptPerLine = True,
-                       Str :$format = 'JSON' ) is export {
+                       *%params) is export {
 
     # If DSL evaluation is specified change the code accordingly
     my $code-to-eval = do given $lang {
-        when %codeChunkLangCaller{$_}:exists { %codeChunkLangCaller{$_}.($code.Str.subst('"', '\"'), "format => '$format'") };
-        when $_ eq 'shell' { 'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out);  $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;' };
+
+        when %codeChunkLangCaller{$_}:exists {
+            my $ps = %params.grep({ $_.key ∉ %defaultChunkParams.keys }).map({ "{$_.key} => {(+$_.value).defined ?? $_.value !! "'{$_.value}'"}" }).join(', ');
+            %codeChunkLangCaller{$_}.($code, $ps)
+        }
+
+        when $_ eq 'shell' {
+            'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out); $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;'
+        }
+
         default { $code.Str }
     }
 
@@ -528,10 +552,23 @@ sub register-lang(Str :$lang!, Str :$module!, :&caller!) is export {
 
 
 ##===========================================================
-## Plug-in definition for raku-dsl
+## Plug-in definition
 ##===========================================================
 
+# DSL
 register-lang(
         lang => 'raku-dsl',
         module => 'DSL::Shared::Utilities::ComprehensiveTranslation',
-        caller => -> $code, $params { 'ToDSLCode("' ~ $code ~ '",' ~ $params ~ ')' } );
+        caller => -> Str $code, Str $params { 'ToDSLCode("' ~ $code.Str.subst('"', '\"') ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' } );
+
+# OpenAI
+register-lang(
+        lang => 'openai',
+        module => 'WWW::OpenAI',
+        caller => -> $code, $params {'openai-completion("' ~ $code.Str.subst('"', '\"', :g) ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' });
+
+# PaLM
+register-lang(
+        lang => 'palm',
+        module => 'WWW::PaLM',
+        caller => -> $code, $params {'palm-generate-text("' ~ $code.Str.subst('"', '\"', :g) ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' });
