@@ -5,13 +5,25 @@
 use v6.d;
 use Text::CodeProcessing::REPLSandbox;
 
+unit module Text::CodeProcessing;
+
 ##===========================================================
 ## Code chunk known languages
 ##===========================================================
 
-# This variable can be overwritten by other packages
-our @knownCodeChuckLangs = <perl6 raku raku-dsl shell>;
+#| Known code chunk languages.
+our @codeChuckLangs = <perl6 raku shell>;
+#= This variable can be overwritten by other packages
 
+#| Modules for know code chunk languages.
+our %codeChunkLangModule;
+#= One language one module.
+
+#| Initialization for know code chunk languages.
+our %codeChunkLangCaller;
+
+#| Initialization for know code chunk languages.
+our %codeChunkLangInit;
 
 ##===========================================================
 ## Code chunk parameters with their default values
@@ -116,7 +128,7 @@ my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
 #| Markdown code chunk search regex
 my regex MarkdownSearch {
     $<header>=(
-    $mdTicks '{'? \h* $<lang>=( @knownCodeChuckLangs )
+    $mdTicks '{'? \h* $<lang>=(@codeChuckLangs)
     [ \h+ $<name>=(<alpha>+) ]?
     [ \h* ',' \h* $<params>=(<md-list-of-params>) ]? \h* '}'? \h* \v )
     $<code>=[<!before $mdTicks> .]*
@@ -174,7 +186,7 @@ my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
 
 #| Org-mode code chunk search regex
 my regex OrgModeSearch {
-    $<header>=( $orgBeginSrc \h* $<lang>=( @knownCodeChuckLangs )
+    $<header>=( $orgBeginSrc \h* $<lang>=(@codeChuckLangs)
     [ \h+ $<params>=(<org-list-of-params>) ]? \h* \v )
     $<code>=[<!before $orgEndSrc> .]*
     $orgEndSrc
@@ -228,7 +240,7 @@ my regex pod-list-of-params { <pod-assign-pair>+ % [ \h+ ] }
 
 #| Pod6 code chunk search regex
 my regex Pod6Search {
-    $<header>=( $podBeginSrc [ \h+ ':lang<' @knownCodeChuckLangs '>' ]?
+    $<header>=( $podBeginSrc [ \h+ ':lang<' @codeChuckLangs '>' ]?
     [ \h+ $<params>=(<pod-list-of-params>) ]? \h* \v )
     $<code>=[<!before $podEndSrc> .]*
     $podEndSrc
@@ -309,28 +321,25 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
                        Bool :$promptPerLine = True,
                        Str :$format = 'JSON' ) is export {
 
-    # State for whether DSL evaluation is initialized or not
-    state $dslCodeCallInit = 0;
-
     # If DSL evaluation is specified change the code accordingly
     my $code-to-eval = do given $lang {
-        when $_ eq 'raku-dsl' { 'ToDSLCode("' ~ $code.Str.subst('"', '\"', :g) ~ '", format => "' ~ $format ~ '")' };
+        when %codeChunkLangCaller{$_}:exists { %codeChunkLangCaller{$_}.($code.Str.subst('"', '\"'), "format => '$format'") };
         when $_ eq 'shell' { 'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out);  $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;' };
         default { $code.Str }
     }
 
-    if $lang eq 'raku-dsl' and not $dslCodeCallInit {
+    if %codeChunkLangModule{$lang}:exists && !(%codeChunkLangInit{$lang} // False) {
 
-        # Check if the DSL::Shared::Utilities::ComprehensiveTranslation package is installed
-        if not is-installed('DSL::Shared::Utilities::ComprehensiveTranslation') {
-            die "The module DSL::Shared::Utilities::ComprehensiveTranslation has to be installed in order to use raku-dsl code chunk evaluation.";
+        # Check if the required module(s) are installed
+        if ! is-installed(%codeChunkLangModule{$lang}) {
+            die "The module {%codeChunkLangModule{$lang}} has to be installed in order to use $lang code chunk evaluation.";
         }
 
         # Add package loading
-        $code-to-eval = "use DSL::Shared::Utilities::ComprehensiveTranslation;\n" ~ $code-to-eval;
+        $code-to-eval = "use {%codeChunkLangModule{$lang}};" ~ "\n" ~ $code-to-eval;
 
         # Mark the DSL initialization
-        $dslCodeCallInit = 1
+        %codeChunkLangInit{$lang} = True;
     }
 
     ## Redirecting stdout to a custom $out
@@ -501,3 +510,28 @@ sub FileCodeChunksExtraction(Str $fileName,
 
     FileCodeChunksProcessing( $fileName, :$outputFileName, :$noteOutputFileName, :tangle)
 }
+
+
+##===========================================================
+## Register code chunk lang
+##===========================================================
+
+#| Register code chunk language.
+sub register-lang(Str :$lang!, Str :$module!, :&caller!) is export {
+
+    @codeChuckLangs.append($lang);
+
+    %codeChunkLangModule{$lang} = $module;
+
+    %codeChunkLangCaller{$lang} = &caller;
+}
+
+
+##===========================================================
+## Plug-in definition for raku-dsl
+##===========================================================
+
+register-lang(
+        lang => 'raku-dsl',
+        module => 'DSL::Shared::Utilities::ComprehensiveTranslation',
+        caller => -> $code, $params { 'ToDSLCode("' ~ $code ~ '",' ~ $params ~ ')' } );
