@@ -342,7 +342,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
 
         when %codeChunkLangCaller{$_}:exists {
             my $ps = %params.grep({ $_.key ∉ %defaultChunkParams.keys }).map({ "{$_.key} => {(+$_.value).defined ?? $_.value !! "'{$_.value}'"}" }).join(', ');
-            %codeChunkLangCaller{$_}.($code, $ps)
+            %codeChunkLangCaller{$_}.($code.Str, $ps)
         }
 
         when $_ eq 'shell' {
@@ -559,16 +559,17 @@ sub register-lang(Str :$lang!, Str :$module!, :&caller!) is export {
 register-lang(
         lang => 'raku-dsl',
         module => 'DSL::Shared::Utilities::ComprehensiveTranslation',
-        caller => -> Str $code, Str $params { 'ToDSLCode("' ~ $code.Str.subst('"', '\"') ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' } );
+        caller => -> $code, $params { 'ToDSLCode(Q (' ~ $code.Str ~ ')' ~ ($params ?? ", $params" !! '') ~ ')' } );
+        #caller => -> $code, $params { 'ToDSLCode("' ~ $code.Str.subst('"', '\"') ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' } );
 
 # OpenAI
 register-lang(
         lang => 'openai',
         module => 'WWW::OpenAI',
-        caller => -> $code, $params {'openai-completion("' ~ $code.Str.subst('"', '\"', :g) ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' });
+        caller => -> $code, $params {'openai-completion(Q (' ~ $code.Str ~ ')' ~ ($params ?? ", $params" !! '') ~ ')' });
 
 # PaLM
 register-lang(
         lang => 'palm',
         module => 'WWW::PaLM',
-        caller => -> $code, $params {'palm-generate-text("' ~ $code.Str.subst('"', '\"', :g) ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' });
+        caller => -> $code, $params {'palm-generate-text(Q (' ~ $code.Str~ ')' ~ ($params ?? ", $params" !! '') ~ ')' });
