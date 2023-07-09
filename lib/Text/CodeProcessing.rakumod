@@ -12,7 +12,7 @@ unit module Text::CodeProcessing;
 ##===========================================================
 
 #| Known code chunk languages.
-our @codeChuckLangs = <perl6 raku shell>;
+our @codeChuckLangs = <perl6 raku>;
 #= This variable can be overwritten by other packages
 
 #| Modules for know code chunk languages.
@@ -52,7 +52,6 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
     my $outputResults = 'markup';
     my $outputLang = '';
     my $evaluate = 'TRUE';
-    my $format = 'JSON';
     my $outputPrompt = %defaults<outputPrompt> // "# OUTPUT: ";
     my $errorPrompt = %defaults<errorPrompt> // "# ERROR: ";
     my %extra;
@@ -68,10 +67,6 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
             } elsif $pair<param>.Str (elem) <eval evaluate> {
 
                 $evaluate = $pair<value>.Str;
-
-#            } elsif $pair<param>.Str eq 'format' {
-#
-#                $format = $pair<value>.Str;
 
             } elsif $pair<param>.Str eq 'outputLang' || $pair<param>.Str ~~ / output.lang / {
 
@@ -345,10 +340,6 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
             %codeChunkLangCaller{$_}.($code.Str, $ps)
         }
 
-        when $_ eq 'shell' {
-            'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out); $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;'
-        }
-
         default { $code.Str }
     }
 
@@ -545,7 +536,7 @@ sub register-lang(Str :$lang!, Str :$module!, :&caller!) is export {
 
     @codeChuckLangs.append($lang);
 
-    %codeChunkLangModule{$lang} = $module;
+    if $module { %codeChunkLangModule{$lang} = $module; }
 
     %codeChunkLangCaller{$lang} = &caller;
 }
@@ -555,12 +546,19 @@ sub register-lang(Str :$lang!, Str :$module!, :&caller!) is export {
 ## Plug-in definition
 ##===========================================================
 
+# Shell
+register-lang(
+        lang => 'shell',
+        module => '',
+        caller => -> $code, $params {
+            'my $pCoDeXe832xereSWEiie3 = Q (' ~ $code.Str ~ '); my $proc = Proc.new(:out); $proc.shell($pCoDeXe832xereSWEiie3); my $captured-output = $proc.out.slurp: :close; $captured-output;'
+        } );
+
 # DSL
 register-lang(
         lang => 'raku-dsl',
         module => 'DSL::Shared::Utilities::ComprehensiveTranslation',
         caller => -> $code, $params { 'ToDSLCode(Q (' ~ $code.Str ~ ')' ~ ($params ?? ", $params" !! '') ~ ')' } );
-        #caller => -> $code, $params { 'ToDSLCode("' ~ $code.Str.subst('"', '\"') ~ '"' ~ ($params ?? ", $params" !! '') ~ ')' } );
 
 # OpenAI
 register-lang(
