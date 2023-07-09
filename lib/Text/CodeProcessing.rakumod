@@ -6,6 +6,29 @@ use v6.d;
 use Text::CodeProcessing::REPLSandbox;
 
 ##===========================================================
+## Code chunk known languages
+##===========================================================
+
+# This variable can be overwritten by other packages
+our @knownCodeChuckLangs = <perl6 raku raku-dsl shell>;
+
+
+##===========================================================
+## Code chunk parameters with their default values
+##===========================================================
+my %defaultChunkParams =
+        :echo,
+        errorPrompt => '#ERROR: ',
+        evaluate => 'TRUE',
+        format => 'JSON',
+        lang => '',
+        name => '',
+        outputLang => '',
+        outputPrompt => '# ',
+        outputResults => 'markup';
+
+
+##===========================================================
 ## Code chunk parameter extraction
 ##===========================================================
 
@@ -93,7 +116,7 @@ my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
 #| Markdown code chunk search regex
 my regex MarkdownSearch {
     $<header>=(
-    $mdTicks '{'? \h* $<lang>=('perl6' | 'raku' | 'raku-dsl' | 'shell')
+    $mdTicks '{'? \h* $<lang>=( @knownCodeChuckLangs )
     [ \h+ $<name>=(<alpha>+) ]?
     [ \h* ',' \h* $<params>=(<md-list-of-params>) ]? \h* '}'? \h* \v )
     $<code>=[<!before $mdTicks> .]*
@@ -151,7 +174,7 @@ my regex org-list-of-params { <org-assign-pair>+ % [ \h+ ] }
 
 #| Org-mode code chunk search regex
 my regex OrgModeSearch {
-    $<header>=( $orgBeginSrc \h* $<lang>=('perl6' | 'raku' | 'raku-dsl' | 'shell')
+    $<header>=( $orgBeginSrc \h* $<lang>=( @knownCodeChuckLangs )
     [ \h+ $<params>=(<org-list-of-params>) ]? \h* \v )
     $<code>=[<!before $orgEndSrc> .]*
     $orgEndSrc
@@ -205,7 +228,7 @@ my regex pod-list-of-params { <pod-assign-pair>+ % [ \h+ ] }
 
 #| Pod6 code chunk search regex
 my regex Pod6Search {
-    $<header>=( $podBeginSrc [ \h+ ':lang<' [ 'raku' | 'perl6' | 'shell' ] '>' ]?
+    $<header>=( $podBeginSrc [ \h+ ':lang<' @knownCodeChuckLangs '>' ]?
     [ \h+ $<params>=(<pod-list-of-params>) ]? \h* \v )
     $<code>=[<!before $podEndSrc> .]*
     $podEndSrc
