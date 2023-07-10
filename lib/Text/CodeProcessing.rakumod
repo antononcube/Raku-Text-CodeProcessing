@@ -159,6 +159,10 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
             $origChunk ~ ($evalCode ?? "\n" ~ $res !! '');
         }
 
+        when 'hide' {
+            $origChunk;
+        }
+
         default {
             $origChunk ~
                     ($evalCode
@@ -218,6 +222,10 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
         when 'asis' {
             $origChunk ~
                     ($evalCode ?? "\n" ~ $res !! '');
+        }
+
+        when 'hide' {
+            $origChunk;
         }
 
         default {
@@ -280,6 +288,10 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
             $origChunk ~
                     "\n" ~
                     $res
+        }
+
+        when 'hide' {
+            $origChunk;
         }
 
         default {
