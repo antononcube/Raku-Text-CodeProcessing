@@ -570,16 +570,16 @@ register-lang(
 register-lang(
         lang => 'raku-dsl',
         module => 'DSL::Shared::Utilities::ComprehensiveTranslation',
-        caller => -> $code, $params { 'ToDSLCode(Q (' ~ $code.Str ~ ')' ~ ($params ?? ", $params" !! '') ~ ')' } );
+        caller => -> $code, $params { 'ToDSLCode(Q｢｢｢｢' ~ $code.Str ~ '｣｣｣｣' ~ ($params ?? ", $params" !! '') ~ ')' } );
 
 # OpenAI
 register-lang(
         lang => 'openai',
         module => 'WWW::OpenAI',
-        caller => -> $code, $params {'openai-completion(Q (' ~ $code.Str ~ ')' ~ ($params ?? ", $params" !! '') ~ ')' });
+        caller => -> $code, $params {'openai-completion(Q｢｢｢｢' ~ $code.Str ~ '｣｣｣｣' ~ ($params ?? ", $params" !! '') ~ ')' });
 
 # PaLM
 register-lang(
         lang => 'palm',
         module => 'WWW::PaLM',
-        caller => -> $code, $params {'palm-generate-text(Q (' ~ $code.Str~ ')' ~ ($params ?? ", $params" !! '') ~ ')' });
+        caller => -> $code, $params {'palm-generate-text(Q｢｢｢｢' ~ $code.Str~ '｣｣｣｣' ~ ($params ?? ", $params" !! '') ~ ')' });
