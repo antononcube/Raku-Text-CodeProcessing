@@ -146,13 +146,19 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
 
     my $outputLang = %params<outputLang> // '';
 
+    # To evaluate or not
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+
     # Construct the replacement string
-    my $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
+    my $res = '';
+    if $evalCode {
+        $res = CodeChunkEvaluate($sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
             lang => %params<lang>,
             :$promptPerLine,
             |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+    }
 
-    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    # Compose result
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $mdTicks !! '';
     return do given %params<outputResults> {
         when 'asis' {
@@ -209,14 +215,20 @@ sub OrgModeReplace ($sandbox, $/, Str :$evalOutputPrompt = ': ', Str :$evalError
                        errorPrompt => $evalErrorPrompt.lc ∈ <auto whatever> ?? ':ERROR: ' !! $evalErrorPrompt,
                        format => 'JSON' ) );
 
+    # To evaluate or not
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+
     # Construct the replacement string
-    my $res = CodeChunkEvaluate(
+    my $res = '';
+    if $evalCode {
+        $res = CodeChunkEvaluate(
             $sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
             lang => %params<lang>,
             :$promptPerLine,
             |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+    }
 
-    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    # Compose result
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $orgEndSrc !! '';
     return do given %params<outputResults> {
         when 'asis' {
@@ -275,13 +287,20 @@ sub Pod6Replace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErrorPro
     my $outputLang = %params<outputLang> // '';
     if $outputLang { $outputLang = ' :lang<' ~ $outputLang ~ '>'; }
 
-    my $res = CodeChunkEvaluate(
+    # To evaluate or not
+    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+
+    # Construct the replacement string
+    my $res = '';
+    if $evalCode {
+        $res = CodeChunkEvaluate(
             $sandbox, $<code>, %params<outputPrompt>, %params<errorPrompt>,
             lang => %params<lang>,
             :$promptPerLine,
             |%params.grep({ $_.key ∉ %defaultChunkParams.keys }).Hash);
+    }
 
-    my Bool $evalCode = %params<evaluate>.lc (elem) <true t yes>;
+    # Compose result
     my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $podEndSrc !! '';
     return do given %params<outputResults> {
         when 'asis' {
