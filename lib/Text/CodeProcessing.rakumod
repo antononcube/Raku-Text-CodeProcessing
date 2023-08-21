@@ -100,7 +100,7 @@ sub CodeChunkParametersExtraction( Str $list-of-params, $/, %defaults --> Hash) 
                 if $outputResults eq 'asis' { $outputPrompt = ''; }
 
             } else {
-                %extra{$pair<param>} = $pair<value>;
+                %extra{$pair<param>} = $pair<value> // True;
             }
         }
     }
