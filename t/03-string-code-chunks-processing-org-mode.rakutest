@@ -220,4 +220,18 @@ is
         'my $answer = 42; $answer ** 2';
 
 
+#============================================================
+# 9 org-mode - fixed bug 2022-10-21
+#============================================================
+
+my $code9 = q:to/ENDORG/;
+* CLI
+- The package provides a Command Line Interface (CLI) script. Here is its usage message:
+#+BEGIN_SRC shell :results output :exports both :session
+data-translation --help
+#+END_SRC
+ENDORG
+
+ok StringCodeChunksEvaluation($code9, 'org-mode');
+
 done-testing;
