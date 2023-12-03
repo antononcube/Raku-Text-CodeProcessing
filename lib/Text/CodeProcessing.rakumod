@@ -124,12 +124,12 @@ my regex md-list-of-params { <md-assign-pair>+ % [ \h* ',' \h* ] }
 
 #| Markdown code chunk search regex
 my regex MarkdownSearch {
-    $<header>=(
-    $mdTicks '{'? \h* $<lang>=(@codeChuckLangs)
+    $<fence>=[ ['`' | '~'] ** 3..* ]
+    $<header>=('{'? \h* $<lang>=(@codeChuckLangs)
     [ \h+ $<name>=(<alpha>+) ]?
     [ \h* ',' \h* $<params>=(<md-list-of-params>) ]? \h* '}'? \h* \v )
-    $<code>=[<!before $mdTicks> .]*
-    $mdTicks
+    $<code>=(.*?)
+    <?after \v> $<fence>
 }
 
 #| Markdown replace sub
@@ -159,7 +159,7 @@ sub MarkdownReplace ($sandbox, $/, Str :$evalOutputPrompt = '# ', Str :$evalErro
     }
 
     # Compose result
-    my $origChunk = %params<echo> ?? $<header> ~ $<code> ~ $mdTicks !! '';
+    my $origChunk = %params<echo> ?? $<fence> ~ $<header> ~ $<code> ~ $<fence> !! '';
     return do given %params<outputResults> {
         when 'asis' {
             $origChunk ~ ($evalCode ?? "\n" ~ $res !! '');
