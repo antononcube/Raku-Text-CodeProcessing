@@ -1,7 +1,7 @@
 {
   "name": "Text::CodeProcessing",
   "description": "A package with functions for processing of code chunks in documents of different types (like Markdown, Org-mode, Pod6.)",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "perl": "6.d",
   "authors": [
     "Anton Antonov"
