@@ -6,7 +6,7 @@ use lib '.';
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 12;
+plan 13;
 
 #============================================================
 # 1 markdown - Simple
@@ -350,5 +350,34 @@ is
         StringCodeChunksEvaluation($code12, 'markdown', evalOutputPrompt => '', evalErrorPrompt => '#ERR:'),
         $resCode12,
         'JSON output chunk with {{}}';
+
+
+#============================================================
+# 13 markdown - State
+#============================================================
+# Testing the fix / feature of
+# https://github.com/antononcube/Raku-Text-CodeProcessing/issues/4
+my $code13 = q:to/INIT/;
+~~~~raku
+my $answer = 42;
+$answer ** 2
+~~~~
+INIT
+
+my $resCode13 = q:to/INIT/;
+~~~~raku
+my $answer = 42;
+$answer ** 2
+~~~~
+```
+#OUT:1764
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code13, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:'),
+        $resCode13,
+        'my $answer = 42; $answer ** 2 qith `~~~~`';
+
 
 done-testing;
