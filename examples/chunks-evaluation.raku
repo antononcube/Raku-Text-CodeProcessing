@@ -1,8 +1,5 @@
 #!/usr/bin/env perl6
 
-use lib './lib';
-use lib '.';
-
 use Text::CodeProcessing;
 
 ## Markdown
