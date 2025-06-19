@@ -94,11 +94,6 @@ Getting data from %params<dataDirName>:
 say %params<partSize>;
 say (%params{"exportQ"} ?? '' !! 'do not ') ~ 'export it';
 ```
-```
-#ERROR: Variable '%params' is not declared.  Perhaps you forgot a 'sub' if this
-#ERROR: was intended to be part of a signature?
-# Nil
-```
 ````
 
 See the test file ["08-header-parameters.rakutest"](./t/08-header-parameters.rakutest) for 
