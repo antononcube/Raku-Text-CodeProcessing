@@ -429,7 +429,8 @@ sub StringCodeChunksEvaluation(Str:D $input is copy,
                                Str:D $docType,
                                :$evalOutputPrompt is copy = Whatever,
                                :$evalErrorPrompt is copy = Whatever,
-                               Bool :$promptPerLine = True) is export {
+                               Bool :$promptPerLine = True,
+                               :%params = %()) is export {
 
     die "The second argument is expected to be one of {%fileTypeToReplaceSub.keys.join(', ')}."
     unless $docType (elem) %fileTypeToReplaceSub.keys;
@@ -447,8 +448,9 @@ sub StringCodeChunksEvaluation(Str:D $input is copy,
 
     ## Parse YAML header (if any)
     my %header = Text::CodeProcessing::Header.parse($input, actions => Text::CodeProcessing::HeaderActions.new).made // %();
-    if %header<params> {
-        for %header<params>.kv -> $p, $v {
+    if %header<params> || %params {
+        my %h = |%header<params> , |%params;
+        for %h.kv -> $p, $v {
             $input .= subst('%params<' ~ $p ~ '>', $v, :g);
             $input .= subst('%params{"' ~ $p ~ '"}', $v, :g);
             $input .= subst('%params{\'' ~ $p ~ '\'}', $v, :g);
@@ -490,7 +492,8 @@ sub FileCodeChunksProcessing(Str $fileName,
                              :$evalErrorPrompt is copy = Whatever,
                              Bool :$noteOutputFileName = False,
                              Bool :$promptPerLine = True,
-                             Bool :$tangle = False) {
+                             Bool :$tangle = False,
+                             :%params = %()) {
 
     ## Determine the output file name and type
     my Str $fileNameNew;
@@ -536,7 +539,7 @@ sub FileCodeChunksProcessing(Str $fileName,
     if $tangle {
         spurt( $fileNameNew, StringCodeChunksExtraction(slurp($fileName), $fileType) )
     } else {
-        spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt, :$promptPerLine) )
+        spurt( $fileNameNew, StringCodeChunksEvaluation(slurp($fileName), $fileType, :$evalOutputPrompt, :$evalErrorPrompt, :$promptPerLine, :%params) )
     }
 }
 
@@ -551,9 +554,10 @@ sub FileCodeChunksEvaluation(Str $fileName,
                              :$evalOutputPrompt = 'AUTO',
                              :$evalErrorPrompt = 'AUTO',
                              Bool :$noteOutputFileName = True,
-                             Bool :$promptPerLine = True) is export {
+                             Bool :$promptPerLine = True,
+                             :%params = %()) is export {
 
-    FileCodeChunksProcessing( $fileName, :$outputFileName, :$evalOutputPrompt, :$evalErrorPrompt, :$noteOutputFileName, :$promptPerLine, :!tangle)
+    FileCodeChunksProcessing( $fileName, :$outputFileName, :$evalOutputPrompt, :$evalErrorPrompt, :$noteOutputFileName, :$promptPerLine, :%params, :!tangle)
 }
 
 

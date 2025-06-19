@@ -8,11 +8,12 @@ my %*SUB-MAIN-OPTS = :named-anywhere;
 
 #| Evaluates code chunks in a file. (Markdown, Org-mode, or Pod6.)
 sub MAIN(
-        Str $inputFileName where *.IO.f,                           #= Input file name.
-        Str :o(:$output) = 'Whatever',                             #= Output file; if not given the output file name is the input file name concatenated with "_woven".
-        Str :eval-output-prompt(:$evalOutputPrompt) = 'Whatever',  #= Evaluation results prompt.
-        Str :eval-error-prompt(:$evalErrorPrompt) = 'Whatever',    #= Evaluation errors prompt.
-        Bool :prompt-per-line(:$promptPerLine) = True              #= Should prompts be printed per line or not?
+        Str:D $inputFileName where *.IO.f,                           #= Input file name.
+        Str:D :o(:$output) = 'Whatever',                             #= Output file; if not given the output file name is the input file name concatenated with "_woven".
+        Str:D :eval-output-prompt(:$evalOutputPrompt) = 'Whatever',  #= Evaluation results prompt.
+        Str:D :eval-error-prompt(:$evalErrorPrompt) = 'Whatever',    #= Evaluation errors prompt.
+        Bool:D :prompt-per-line(:$promptPerLine) = True,             #= Should prompts be printed per line or not?
+        Str:D :p(:$params)                                           #= A list or map of named parameters that override custom params specified within the YAML front-matter.
          ) {
 
     my $outputLocal = $output;
@@ -20,5 +21,14 @@ sub MAIN(
         $outputLocal = Whatever
     };
 
-    return FileCodeChunksEvaluation($inputFileName, outputFileName => $outputLocal, :$evalOutputPrompt, :$evalErrorPrompt, :noteOutputFileName, :$promptPerLine);
+    my %params = %();
+    try {
+        use MONKEY-SEE-NO-EVAL;
+        %params = EVAL $params
+    }
+    if $! {
+        note 'Cannot convert the params argument into a hashmap.'
+    }
+
+    return FileCodeChunksEvaluation($inputFileName, outputFileName => $outputLocal, :$evalOutputPrompt, :$evalErrorPrompt, :noteOutputFileName, :$promptPerLine, :%params);
 }
