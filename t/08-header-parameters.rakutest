@@ -87,7 +87,7 @@ Getting data from %params<dataDirName>:
 
 ```raku
 say %params<partSize>;
-say (%params<exportQ> ?? '' !! 'do not ') ~ 'export it';
+say (%params{"exportQ"} ?? '' !! 'do not ') ~ 'export it';
 ```
 INIT
 
