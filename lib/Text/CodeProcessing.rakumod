@@ -449,7 +449,9 @@ sub StringCodeChunksEvaluation(Str:D $input is copy,
     my %header = Text::CodeProcessing::Header.parse($input, actions => Text::CodeProcessing::HeaderActions.new).made // %();
     if %header<params> {
         for %header<params>.kv -> $p, $v {
-            $input .= subst('%params<' ~ $p ~ '>', $v, :g)
+            $input .= subst('%params<' ~ $p ~ '>', $v, :g);
+            $input .= subst('%params{"' ~ $p ~ '"}', $v, :g);
+            $input .= subst('%params{\'' ~ $p ~ '\'}', $v, :g);
         }
     }
 
