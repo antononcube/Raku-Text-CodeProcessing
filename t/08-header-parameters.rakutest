@@ -105,7 +105,7 @@ params:
 
 ## First section
 
-Getting data from ~/fake-data:
+Getting data from '~/fake-data':
 
 ```raku
 say 0.25;
@@ -128,7 +128,7 @@ is
 
 is
         StringCodeChunksEvaluation($code3, 'markdown', params => {dataDirName => './true-data'}, evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:').trim,
-        $resCode3.subst('from ~/fake-data', 'from ./true-data').trim,
+        $resCode3.subst('from \'~/fake-data\'', 'from \'./true-data\'').trim,
         'replacement of parameters in a Markdown string';
 
 
