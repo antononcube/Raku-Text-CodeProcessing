@@ -5,7 +5,7 @@ use Test;
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
 
-plan 3;
+plan 4;
 
 #============================================================
 # 1 Header parsing
@@ -67,7 +67,7 @@ is-deeply
         'YAML header parameters';
 
 #============================================================
-# 2 markdown file parameter replacement
+# 3 markdown header parameter replacement
 #============================================================
 my $code3 = q:to/INIT/;
 ----
@@ -121,5 +121,15 @@ is
         StringCodeChunksEvaluation($code3, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:').trim,
         $resCode3.trim,
         'replacement of parameters in a Markdown string';
+
+#============================================================
+# 4 markdown header parameter override
+#============================================================
+
+is
+        StringCodeChunksEvaluation($code3, 'markdown', params => {dataDirName => './true-data'}, evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:').trim,
+        $resCode3.subst('from ~/fake-data', 'from ./true-data').trim,
+        'replacement of parameters in a Markdown string';
+
 
 done-testing;
