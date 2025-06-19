@@ -18,7 +18,8 @@
   "resources": [
     "BookIntroduction.md",
     "BookIntroduction.org",
-    "BookIntroduction.pod6"
+    "BookIntroduction.pod6",
+    "Template.md"
   ],
   "license": "Artistic-2.0",
   "tags": [
