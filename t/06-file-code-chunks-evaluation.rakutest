@@ -1,7 +1,6 @@
 use Test;
 
-use lib './lib';
-use lib '.';
+# use lib <. lib>;
 
 use Text::CodeProcessing;
 use Text::CodeProcessing::REPLSandbox;
