@@ -73,8 +73,8 @@ When the prompt arguments are given the value `'AUTO'` then the actual prompt va
 
 ## Document parameters
 
-Documents can have a YAML header. If that header contains parameter specifications
-the corresponding parameters values are replaced in the document before evaluation.
+A document can have an YAML header. If that header contains parameter specifications
+then the corresponding parameters values are replaced in the document before evaluation.
 
 Here is a Markdown document string with an YAML header and Raku code that uses the parameters:
 
