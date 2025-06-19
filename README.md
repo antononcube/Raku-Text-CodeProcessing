@@ -71,6 +71,43 @@ When the prompt arguments are given the value `'AUTO'` then the actual prompt va
 
 -------
 
+## Document parameters
+
+Documents can have a YAML header. If that header contains parameter specifications
+the corresponding parameters values are replaced in the document before evaluation.
+
+Here is a Markdown document string with an YAML header and Raku code that uses the parameters:
+
+````
+----
+title: "Replacement example"
+date: 2025-06-19
+params:
+  partSize: 0.25
+  dataDirName: "~/fake-data"
+  exportQ: FALSE
+----
+
+Getting data from %params<dataDirName>:
+
+```raku
+say %params<partSize>;
+say (%params{"exportQ"} ?? '' !! 'do not ') ~ 'export it';
+```
+```
+#ERROR: Variable '%params' is not declared.  Perhaps you forgot a 'sub' if this
+#ERROR: was intended to be part of a signature?
+# Nil
+```
+````
+
+See the test file ["08-header-parameters.rakutest"](./t/08-header-parameters.rakutest) for 
+more detailed examples.
+
+**Remark:** Both forms of hashmap retrieval, `%params<partSize>` and `%params{'partSize'}`, are replaced with the corresponding parameter value.
+
+-------
+
 ## Command Line Interface 
 
 The package provides Command Line Interface (CLI) scripts, 
@@ -187,7 +224,7 @@ The following TODO items are ordered by priority, the most important are on top.
   - [X] DONE File code extraction from chunks 
 
 - [X] DONE Implement handling of code chunk parameters.
-=
+
 - [X] DONE Shell code chunks execution.  
 
 - [X] DONE Implement output code cell generation that is marked as being of specified language.
@@ -195,6 +232,15 @@ The following TODO items are ordered by priority, the most important are on top.
   
 - [X] DONE Comprehensive help for the CLI functions. 
 
+- [X] DONE Implement document-wide, template parameters.
+  - Similar to YAML .Rmd files parameters specs.
+  - [X] DONE YAML header parsing and interpretation.
+  - [X] DONE Parameter substitution.
+    1. [X] Globally over the whole document 
+    2. [ ] Per code chunk
+       - This means considering inline evaluations, like \`\`\`1_000.sqrt\`\`\`.
+  - [X] DONE Unit tests.
+  
 - [ ] TODO Implement data arguments for code chunks.
   (As in [Babel org-mode](https://orgmode.org/manual/Environment-of-a-Code-Block.html).)
 
@@ -202,6 +248,9 @@ The following TODO items are ordered by priority, the most important are on top.
 
 - [ ] TODO Make the functionalities to work with languages other than Raku.
   - This is both difficult and low priority. (Except for shell.)
+
+- [ ] TODO Refactor the sub arguments to use kebab-case (not just camelCase.)
+  - This is of _very low_ priority. 
 
 -----
 
