@@ -451,9 +451,13 @@ sub StringCodeChunksEvaluation(Str:D $input is copy,
     if %header<params> || %params {
         my %h = |%header<params> , |%params;
         for %h.kv -> $p, $v {
-            $input .= subst('%params<' ~ $p ~ '>', $v, :g);
-            $input .= subst('%params{"' ~ $p ~ '"}', $v, :g);
-            $input .= subst('%params{\'' ~ $p ~ '\'}', $v, :g);
+            my $v2 = $v;
+            if $v ~~ Str:D && $v !~~ /^ \' .* \' $ | ^ \" .* \" $/ {
+                $v2 = "'$v'"
+            }
+            $input .= subst('%params<' ~ $p ~ '>', $v2, :g);
+            $input .= subst('%params{"' ~ $p ~ '"}', $v2, :g);
+            $input .= subst('%params{\'' ~ $p ~ '\'}', $v2, :g);
         }
     }
 
