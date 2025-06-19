@@ -13,7 +13,7 @@ sub MAIN(
         Str:D :eval-output-prompt(:$evalOutputPrompt) = 'Whatever',  #= Evaluation results prompt.
         Str:D :eval-error-prompt(:$evalErrorPrompt) = 'Whatever',    #= Evaluation errors prompt.
         Bool:D :prompt-per-line(:$promptPerLine) = True,             #= Should prompts be printed per line or not?
-        Str:D :p(:$params)                                           #= A list or map of named parameters that override custom params specified within the YAML front-matter.
+        Str:D :p(:$params) = ''                                      #= A list or map of named parameters that override custom params specified within the YAML front-matter.
          ) {
 
     my $outputLocal = $output;
