@@ -3,9 +3,11 @@
 # The initial version of the code was taken from : https://stackoverflow.com/a/57128623
 
 use v6.d;
-use Text::CodeProcessing::REPLSandbox;
 
 unit module Text::CodeProcessing;
+
+use Text::CodeProcessing::HeaderParser;
+use Text::CodeProcessing::REPLSandbox;
 
 ##===========================================================
 ## Code chunk known languages
@@ -423,7 +425,7 @@ sub CodeChunkEvaluate ($sandbox, $code, $evalOutputPrompt, $evalErrorPrompt,
 ##===========================================================
 
 #| Evaluates code chunks in a string.
-sub StringCodeChunksEvaluation(Str:D $input,
+sub StringCodeChunksEvaluation(Str:D $input is copy,
                                Str:D $docType,
                                :$evalOutputPrompt is copy = Whatever,
                                :$evalErrorPrompt is copy = Whatever,
@@ -442,6 +444,14 @@ sub StringCodeChunksEvaluation(Str:D $input,
 
     ## Create a sandbox
     my $sandbox = Text::CodeProcessing::REPLSandbox.new();
+
+    ## Parse YAML header (if any)
+    my %header = Text::CodeProcessing::Header.parse($input, actions => Text::CodeProcessing::HeaderActions.new).made // %();
+    if %header<params> {
+        for %header<params>.kv -> $p, $v {
+            $input .= subst('%params<' ~ $p ~ '>', $v, :g)
+        }
+    }
 
     ## Process code chunks (weave output)
     $input.subst: %fileTypeToSearchSub{$docType}, -> $s { %fileTypeToReplaceSub{$docType}($sandbox, $s,
