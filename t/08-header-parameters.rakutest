@@ -1,0 +1,125 @@
+use Test;
+
+# use lib <. lib>;
+
+use Text::CodeProcessing;
+use Text::CodeProcessing::REPLSandbox;
+
+plan 3;
+
+#============================================================
+# 1 Header parsing
+#============================================================
+my $code1 = q:to/INIT/;
+----
+title: "Replacement example"
+author: Anton Antonov
+date: 2025-06-19
+output: html_notebook
+params:
+  partSize: 0.25
+  dataDirName: "~/fake-data"
+  exportQ: FALSE
+----
+INIT
+
+my %res1 =
+        :title("Replacement example"),
+        :author("Anton Antonov"),
+        :date("2025-06-19"),
+        :output("html_notebook"),
+        params => {:dataDirName("~/fake-data"), :!exportQ, :partSize(0.25)};
+
+is-deeply
+        Text::CodeProcessing::Header.parse($code1, actions => Text::CodeProcessing::HeaderActions.new).made,
+        %res1,
+        'YAML header parameters';
+
+
+#============================================================
+# 1 Header parsing
+#============================================================
+my $code2 = q:to/INIT/;
+----
+title: "Replacement example"
+author: Anton Antonov
+date: 2025-06-19
+output: html_notebook
+params:
+  partSize: 0.25
+  dataDirName: "~/fake-data"
+  exportQ: FALSE
+----
+
+## First section
+
+Some text, here is code:
+
+```raku
+1 + 1
+```
+
+INIT
+
+is-deeply
+        Text::CodeProcessing::Header.parse($code2, actions => Text::CodeProcessing::HeaderActions.new).made,
+        %res1,
+        'YAML header parameters';
+
+#============================================================
+# 2 markdown file parameter replacement
+#============================================================
+my $code3 = q:to/INIT/;
+----
+title: "Replacement example"
+author: Anton Antonov
+date: 2025-06-19
+output: html_notebook
+params:
+  partSize: 0.25
+  dataDirName: "~/fake-data"
+  exportQ: FALSE
+----
+
+## First section
+
+Getting data from %params<dataDirName>:
+
+```raku
+say %params<partSize>;
+say (%params<exportQ> ?? '' !! 'do not ') ~ 'export it';
+```
+INIT
+
+my $resCode3 = q:to/INIT/;
+----
+title: "Replacement example"
+author: Anton Antonov
+date: 2025-06-19
+output: html_notebook
+params:
+  partSize: 0.25
+  dataDirName: "~/fake-data"
+  exportQ: FALSE
+----
+
+## First section
+
+Getting data from ~/fake-data:
+
+```raku
+say 0.25;
+say (False ?? '' !! 'do not ') ~ 'export it';
+```
+```
+#OUT:0.25
+#OUT:do not export it
+```
+INIT
+
+is
+        StringCodeChunksEvaluation($code3, 'markdown', evalOutputPrompt => '#OUT:', evalErrorPrompt => '#ERR:').trim,
+        $resCode3.trim,
+        'replacement of parameters in a Markdown string';
+
+done-testing;
