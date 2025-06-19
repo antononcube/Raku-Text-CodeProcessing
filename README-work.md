@@ -101,6 +101,19 @@ more detailed examples.
 
 **Remark:** Both forms of hashmap retrieval, `%params<partSize>` and `%params{'partSize'}`, are replaced with the corresponding parameter value.
 
+This Command Line Interface (CLI) invocation over ["Template.md"](./resources/Template.md) 
+generates 10 random integers and their Russian numeric word forms:
+
+```
+file-code-chunks-eval ./resources/Template.md
+```
+
+This CLI invocation over the same template generates 7 random integers and their Bulgarian numeric word forms:
+
+```
+file-code-chunks-eval ./resources/Template.md --params="{to-lang=>'Bulgarian', :7sample-size}"
+```
+
 -------
 
 ## Command Line Interface 
