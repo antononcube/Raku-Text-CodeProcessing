@@ -8,8 +8,10 @@ grammar Text::CodeProcessing::Header {
     regex header { [ <nested> | <pair> ]* % \v }
     regex pair { <key> \h* ':' \h* <value> }
     token key { <-[:\s]>+ }
-    regex value { <scalar> }
-    token scalar { \w \V+ | '"' <-["\v]>+ '"' | '\'' <-['\v]>+ '\'' }
+    regex value { <number> | <boolean> | <string> }
+    token string { \w \V+ | '"' <-["\v]>+ '"' | '\'' <-['\v]>+ '\'' }
+    token boolean {:i true | false}
+    regex number { \d+ [ '.' \d+ ]? [ <[eE]> [ '+' | '-' ]? \d+ ]? }
     regex nested { <key> \h* ':' \h* \v [ <indent-pair>* % \v ] }
     token indent { \h+ }
     regex indent-pair { <indent> <pair> }
@@ -26,7 +28,9 @@ class Text::CodeProcessing::HeaderActions {
     method indent-pair($/) {
         make $<pair>.made;
     }
-    method scalar($/) { make $/.Str }
-    method value($/) { make $/.Str }
+    method string($/) { make $/.Str.subst(/ ^ '"' | '"' $/, :g).subst(/ ^ '\'' | '\'' $/, :g) }
+    method boolean($/) { make $/.Str.lc eq 'true' ?? True !! False }
+    method number($/) { make $/.Str.Numeric }
+    method value($/) { make $/.values[0].made }
     method nested($/) { make $<key>.Str => $/<indent-pair>».made.Hash }
 }
