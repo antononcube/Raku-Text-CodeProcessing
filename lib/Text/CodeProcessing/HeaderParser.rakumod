@@ -9,7 +9,7 @@ grammar Text::CodeProcessing::Header {
     regex pair { <key> \h* ':' \h* <value> }
     token key { <-[:\s]>+ }
     regex value { <number> | <boolean> | <string> }
-    token string { \w \V+ | '"' <-["\v]>+ '"' | '\'' <-['\v]>+ '\'' }
+    token string { \w \V+ | '"' <-["\v]>* '"' | '\'' <-['\v]>* '\'' }
     token boolean {:i true | false}
     regex number { \d+ [ '.' \d+ ]? [ <[eE]> [ '+' | '-' ]? \d+ ]? }
     regex nested { <key> \h* ':' \h* \v [ <indent-pair>* % \v ] }
