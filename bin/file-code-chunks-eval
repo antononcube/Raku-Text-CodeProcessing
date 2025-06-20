@@ -23,8 +23,10 @@ sub MAIN(
 
     my %params = %();
     try {
-        use MONKEY-SEE-NO-EVAL;
-        %params = EVAL $params
+        if $params {
+            use MONKEY-SEE-NO-EVAL;
+            %params = EVAL $params
+        }
     }
     if $! {
         note 'Cannot convert the params argument into a hashmap.'
